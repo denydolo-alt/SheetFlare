@@ -2,16 +2,10 @@
 <html lang="id">
 <head>
     <script>
-        // ⚡ PENGAMAN 0 DETIK: Tendang penyusup sebelum layar terbuka!
-        if(!sessionStorage.getItem('user_email')) {
-            alert("Sesi login Anda tidak ditemukan. Silakan login kembali.");
-            window.location.replace('/login');
-        }
+        const isUser = sessionStorage.getItem('user_email');
+        const isAdmin = sessionStorage.getItem('adm_v10') === 'true' || localStorage.getItem('melimpah_admin_data') !== null;
+        if (!isUser && !isAdmin) { window.location.replace('/member'); }
     </script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruang Belajar - SheetFlare</title>
 
     <link rel="preconnect" href="https://script.google.com">
     <link rel="dns-prefetch" href="https://script.google.com">
@@ -19,301 +13,697 @@
     <link rel="dns-prefetch" href="https://script.googleusercontent.com">
 
     <script src="config.js?v=2026"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Belajar</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        /* === CSS RESET & VARIABLES === */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --emerald-50: #ecfdf5; --emerald-100: #d1fae5; --emerald-500: #10b981; --emerald-600: #059669; --emerald-700: #047857; --emerald-800: #065f46;
-            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b; --slate-600: #475569; --slate-800: #1e293b; --slate-900: #0f172a;
+            --brand-blue: #00AAE7;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
         }
 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-50); color: var(--slate-800); overflow: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; height: 100vh; width: 100vw; }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; border: none; background: none; font-family: inherit; outline: none; }
-        .hidden { display: none !important; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--slate-50); color: var(--slate-900); margin: 0; overflow-x: hidden; }
+        h1.judul-halaman, .judul-halaman { display: none !important; }
 
-        /* === SCROLLBAR === */
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .bg-brand-blue { background-color: var(--brand-blue); }
+        .text-brand-blue { color: var(--brand-blue); }
+        .btn-primary { background-color: var(--brand-blue); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        .btn-primary:hover { opacity: 0.9; }
 
-        /* === ANIMATIONS === */
+        /* Layout Styles */
+        .lms-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; display: grid; grid-template-columns: 1fr; gap: 2rem; position: relative; z-index: 10; }
+        @media (min-width: 1024px) { .lms-container { grid-template-columns: 2fr 1fr; } }
+
+        .video-wrapper { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; background: #000; overflow: hidden; }
+        
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        #yt-click-catcher { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 50px); z-index: 55; cursor: pointer; background: transparent; }
+
+        /* Cinematic Masking - Atas (Menutupi Judul YT) */
+        .yt-blocker-top {
+            position: absolute; top: 0; left: 0; width: 100%; 
+            height: 140px; 
+            background: linear-gradient(rgba(15, 23, 42, 1) 35%, rgba(15, 23, 42, 0.6) 70%, rgba(15, 23, 42, 0) 100%);
+            z-index: 52; pointer-events: none; opacity: 1; transition: opacity 0.6s ease-in-out;
+        }
+
+        /* Cinematic Masking - Bawah (Menutupi Logo YT & Elemen Bawah) */
+        .yt-blocker-bottom {
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            height: 140px; 
+            background: linear-gradient(rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.6) 30%, rgba(15, 23, 42, 1) 65%);
+            z-index: 52; pointer-events: none; opacity: 1; transition: opacity 0.6s ease-in-out;
+        }
+
+        /* Icon Pause Tengah */
+        .yt-center-pause-mask {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80px; height: 80px; background: rgba(15, 23, 42, 0.9);
+            border-radius: 50%; z-index: 52; display: none; align-items: center; justify-content: center;
+            pointer-events: none; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .video-container.paused .yt-center-pause-mask { display: flex; }
+
+        /* Custom Controls Bar */
+        .custom-controls {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            z-index: 60; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box;
+            gap: 15px; opacity: 0; transition: opacity 0.3s;
+        }
+        .video-container:hover .custom-controls, .video-container.paused .custom-controls { opacity: 1; }
+        
+        .progress-wrapper { flex-grow: 1; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px; cursor: pointer; position: relative; }
+        .progress-filled { width: 0%; height: 100%; background: var(--brand-blue); border-radius: 3px; pointer-events: none; transition: width 0.1s linear; }
+        #btn-play-pause { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; outline: none; }
+
+        /* Overlay Awal */
+        #custom-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 80; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        #custom-thumbnail { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: opacity 0.3s; }
+        #custom-overlay:hover #custom-thumbnail { opacity: 0.4; }
+        
+        .custom-play-btn {
+            position: relative; z-index: 81; width: 75px; height: 55px;
+            background-color: var(--brand-blue); border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: transform 0.2s;
+        }
+        #custom-overlay:hover .custom-play-btn { transform: scale(1.1); }
+        
+        .custom-play-btn.loading svg { display: none; }
+        .custom-play-btn.loading::after {
+            content: ""; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+
+        .sidebar-list { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); height: fit-content; }
+        .video-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; margin-bottom: 0.5rem; }
+        .video-item:hover { background: var(--slate-100); }
+        .video-item.active { background: #e0f7ff; border-color: var(--brand-blue); }
+        
+        .nav-header { background: white; border-bottom: 1px solid #e2e8f0; padding: 1rem; position: sticky; top: 0; z-index: 100; }
+        .nav-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+
+        #loading-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 3rem; height: 3rem; border: 4px solid #e0f7ff; border-top-color: var(--brand-blue); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .animate-spin { animation: spin 1s linear infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-        /* === LOADER OVERLAY === */
-        #loader { position: fixed; inset: 0; background: white; z-index: 999; display: flex; flex-direction: column; items-center; justify-content: center; align-items: center; color: var(--emerald-600); transition: opacity 0.3s; }
-        #loader svg { width: 2.5rem; height: 2.5rem; margin-bottom: 1rem; }
-        #loader p { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 
-        /* === HEADER === */
-        .header { background: white; border-bottom: 1px solid var(--slate-200); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; z-index: 30; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        @media (min-width: 768px) { .header { padding: 1rem 1.5rem; } }
-        
-        .header-left { display: flex; align-items: center; gap: 1rem; }
-        .btn-back { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 0.75rem; color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s; }
-        @media (min-width: 768px) { .btn-back { padding: 0.5rem 1rem; } }
-        .btn-back:hover { background: var(--slate-100); color: var(--slate-900); }
-        .btn-back svg { width: 1rem; height: 1rem; }
-        .btn-back span { display: none; }
-        @media (min-width: 768px) { .btn-back span { display: inline; } }
-        
-        .header-divider { width: 1px; height: 2rem; background: var(--slate-200); display: none; }
-        @media (min-width: 768px) { .header-divider { display: block; } }
-        
-        .header-info-sub { font-size: 0.5625rem; font-weight: 700; color: var(--emerald-500); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.125rem; }
-        .header-info-title { font-size: 0.875rem; font-weight: 900; color: var(--slate-800); line-height: 1; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        @media (min-width: 768px) { .header-info-title { font-size: 1rem; max-width: 400px; } }
+        /* Deskripsi LMS - support HTML aman */
+        .lms-desc-stack {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .lms-desc-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.875rem;
+            background: #ffffff;
+            padding: 1rem;
+        }
+        .lms-desc-card h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.65rem;
+            color: #0f172a;
+            font-size: 0.9rem;
+            font-weight: 900;
+        }
+        .lms-desc-content {
+            color: #64748b;
+            line-height: 1.7;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+        .lms-desc-content a {
+            color: var(--brand-blue);
+            font-weight: 800;
+            text-decoration: underline;
+        }
+        .lms-desc-content a:hover { opacity: 0.85; }
+        .lms-desc-content p { margin: 0 0 0.85rem; }
+        .lms-desc-content p:last-child { margin-bottom: 0; }
+        .lms-desc-content ul, .lms-desc-content ol { padding-left: 1.25rem; margin: 0.75rem 0; }
+        .lms-desc-content li { margin-bottom: 0.35rem; }
+        .lms-desc-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 0.75rem 0; }
+        .lms-desc-content iframe { width: 100%; min-height: 320px; border: 0; border-radius: 0.75rem; margin: 0.75rem 0; }
+        .lms-desc-content table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+        .lms-desc-content th, .lms-desc-content td { border: 1px solid #e2e8f0; padding: 0.6rem; text-align: left; }
+        .lms-desc-content th { background: #f8fafc; color: #0f172a; }
+        .lms-desc-content code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #0f172a;
+        }
+        .lms-desc-content pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+        }
+        .lms-desc-content .desc-btn, .lms-desc-content .btn-drive {
+            display: inline-block;
+            padding: 12px 18px;
+            background: var(--brand-blue);
+            color: #fff !important;
+            border-radius: 10px;
+            text-decoration: none !important;
+            font-weight: 800;
+            margin-top: 0.5rem;
+        }
+        .lms-desc-content .desc-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.75rem 0;
+        }
 
-        /* === MAIN LAYOUT === */
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        @media (min-width: 1024px) { .main-wrapper { flex-direction: row; } }
-
-        /* Left Content (Video & Desc) */
-        .content-area { width: 100%; height: 100%; overflow-y: auto; background: var(--slate-50); position: relative; padding-bottom: 5rem; }
-        @media (min-width: 1024px) { .content-area { width: 70%; padding-bottom: 0; } }
-        @media (min-width: 1280px) { .content-area { width: 75%; } }
-
-        /* Video Player Wrapper */
-        .video-wrapper-bg { width: 100%; background: var(--slate-900); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 -2px 10px rgba(0,0,0,0.5); }
-        @media (min-width: 768px) { .video-wrapper-bg { padding: 2rem 0; } }
-        @media (min-width: 1024px) { .video-wrapper-bg { padding: 2.5rem 0; } }
+        #cert-btn-area { display: none; margin-top: 1.5rem; padding: 1.5rem; border: 2px dashed var(--brand-blue); border-radius: 0.75rem; background: #f0faff; text-align: center; }
         
-        .video-container { width: 100%; max-width: 56rem; aspect-ratio: 16 / 9; position: relative; overflow: hidden; background: black; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        @media (min-width: 768px) { .video-container { border-radius: 1rem; } }
-        .video-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-
-        /* Video Info & Description */
-        .info-container { padding: 1.5rem; max-width: 64rem; margin: 0 auto; }
-        @media (min-width: 768px) { .info-container { padding: 2.5rem; } }
-        
-        .info-header { display: flex; flex-direction: column; gap: 1rem; border-bottom: 1px solid var(--slate-200); padding-bottom: 1.5rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { .info-header { flex-direction: row; align-items: flex-start; justify-content: space-between; } }
-        .video-title { font-size: 1.5rem; font-weight: 900; color: var(--slate-900); letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 0.5rem; }
-        @media (min-width: 768px) { .video-title { font-size: 1.875rem; } }
-
-        .desc-box { background: rgba(236, 253, 245, 0.5); /* emerald-50/50 */ border: 1px solid var(--emerald-100); border-radius: 1rem; padding: 1.5rem; }
-        @media (min-width: 768px) { .desc-box { padding: 2rem; } }
-        .desc-box-title { font-size: 0.75rem; font-weight: 900; color: var(--emerald-800); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .desc-box-title svg { width: 1rem; height: 1rem; }
-        .desc-content { font-size: 0.875rem; color: var(--slate-600); line-height: 1.625; }
-        @media (min-width: 768px) { .desc-content { font-size: 1rem; } }
-        
-        /* Sidebar Playlist */
-        .playlist-sidebar { width: 100%; height: 40vh; background: white; border-top: 1px solid var(--slate-200); display: flex; flex-direction: column; z-index: 20; box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.05); }
-        @media (min-width: 1024px) { .playlist-sidebar { width: 30%; height: 100%; border-top: none; border-left: 1px solid var(--slate-200); box-shadow: -10px 0 15px -3px rgba(0,0,0,0.03); } }
-        @media (min-width: 1280px) { .playlist-sidebar { width: 25%; } }
-        
-        .playlist-header { padding: 1.25rem; border-bottom: 1px solid var(--slate-100); background: white; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-        .playlist-title { font-weight: 900; color: var(--slate-800); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.875rem; }
-        .playlist-count { background: var(--emerald-50); color: var(--emerald-600); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; }
-        
-        .playlist-scroll { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 2.5rem; }
-        
-        /* Module Item Button */
-        .module-item { width: 100%; text-align: left; padding: 0.75rem; border-radius: 0.75rem; display: flex; align-items: flex-start; gap: 0.75rem; transition: all 0.2s ease-in-out; border: 1px solid transparent; background: white; }
-        .module-item:hover { background-color: var(--slate-50); border-color: var(--slate-100); transform: translateX(4px); }
-        .module-item.active { background-color: var(--emerald-50); border-color: var(--emerald-200); border-left: 4px solid var(--emerald-500); transform: translateX(4px); }
-        
-        .module-icon { width: 1.25rem; height: 1.25rem; color: var(--slate-400); margin-top: 0.125rem; flex-shrink: 0; transition: color 0.2s; }
-        .module-item.active .module-icon { color: var(--emerald-600); }
-        
-        .module-text-wrap { display: flex; flex-direction: column; }
-        .module-title { font-weight: 700; color: var(--slate-600); font-size: 0.875rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.2s; }
-        .module-item.active .module-title { color: var(--emerald-900); }
-        
-        .module-session { font-size: 0.625rem; color: var(--slate-400); font-weight: 500; margin-top: 0.25rem; }
+        #toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 0.375rem; font-size: 13px; font-weight: 700; color: white; opacity: 0; transform: translateY(20px); transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); max-width: 350px; line-height: 1.4; pointer-events: auto; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background-color: var(--slate-800); }
+        .toast.error { background-color: #f43f5e; }
+        .toast.warning { background-color: var(--slate-600); }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <i data-lucide="loader" class="animate-spin"></i>
-        <p class="animate-pulse">Memverifikasi Akses...</p>
+    <div id="toast-container"></div>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; font-weight: bold; color: #64748b;">Menyiapkan Ruang Belajar...</p>
     </div>
 
-    <header class="header hidden" id="header-ui">
-        <div class="header-left">
-            <a href="/dashboard" class="btn-back">
-                <i data-lucide="arrow-left"></i> <span>Dashboard</span>
-            </a>
-            <div class="header-divider"></div>
-            <div>
-                <p class="header-info-sub">Sedang Dipelajari</p>
-                <h1 id="header-product-id" class="header-info-title">Memuat Data...</h1>
+    <header class="nav-header">
+        <div class="nav-content">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="bg-brand-blue" style="padding: 0.5rem; border-radius: 0.5rem; color: white;">
+                    <i data-lucide="graduation-cap"></i>
+                </div>
+                <span class="dyn-site-name" style="font-weight: 900; font-size: 1.25rem;">LMS Area</span>
             </div>
+            <button onclick="location.href='/member'" class="btn-primary" style="font-size: 0.875rem;">
+                <i data-lucide="arrow-left" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i> Dashboard
+            </button>
         </div>
     </header>
 
-    <main class="main-wrapper hidden" id="main-ui">
-        
-        <div class="content-area custom-scroll">
-            
-            <div class="video-wrapper-bg">
-                <div class="video-container">
-                    <iframe id="video-frame" class="video-iframe" src="" allowfullscreen></iframe>
-                </div>
-            </div>
+    <main class="lms-container">
+        <div class="main-player">
+            <div class="video-wrapper">
+                <div class="video-container paused" id="video-container">
+                    
+                    <div id="player"></div>
+                    
+                    <div id="yt-click-catcher" onclick="togglePlay()"></div>
 
-            <div class="info-container">
-                <div class="info-header">
-                    <div>
-                        <h2 id="lms-title" class="video-title">Pilih video di playlist</h2>
+                    <div id="yt-blocker-top" class="yt-blocker-top"></div>
+                    
+                    <div id="yt-blocker-bottom" class="yt-blocker-bottom"></div>
+
+                    <div class="yt-center-pause-mask">
+                        <svg viewBox="0 0 24 24" width="40" height="40" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                     </div>
-                </div>
 
-                <div class="desc-box">
-                    <h3 class="desc-box-title"><i data-lucide="book-open"></i> Deskripsi Kelas</h3>
-                    <div id="lms-desc" class="desc-content">
+                    <div id="custom-controls" class="custom-controls">
+                        <button id="btn-play-pause" onclick="togglePlay()">
+                            <svg id="icon-play" viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="icon-pause" viewBox="0 0 24 24" width="24" height="24" fill="white" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <div class="progress-wrapper" onclick="seekVideo(event)">
+                            <div id="progress-filled" class="progress-filled"></div>
                         </div>
+                        <span id="time-text" style="color:white; font-size: 12px; font-variant-numeric: tabular-nums;">0:00 / 0:00</span>
+                    </div>
+
+                    <div id="custom-overlay" onclick="startVideo()">
+                        <img id="custom-thumbnail" src="" alt="Thumbnail Video">
+                        <div class="custom-play-btn" id="custom-play-btn">
+                            <svg viewBox="0 0 24 24" width="36" height="36" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+
+                </div>
+                <div style="padding: 1.5rem;">
+                    <h1 id="current-video-title" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Memuat video...</h1>
+                    <div class="lms-desc-stack">
+                        <section class="lms-desc-card" id="course-desc-card">
+                            <h2><i data-lucide="book-open" style="width:1rem;height:1rem;color:var(--brand-blue);"></i> Tentang Kelas</h2>
+                            <div id="course-desc" class="lms-desc-content"></div>
+                        </section>
+                        <section class="lms-desc-card" id="video-desc-card">
+                            <h2><i data-lucide="file-text" style="width:1rem;height:1rem;color:var(--brand-blue);"></i> Catatan Video</h2>
+                            <div id="video-desc" class="lms-desc-content"></div>
+                        </section>
+                    </div>
+                    
+                    <div id="cert-btn-area">
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="font-weight: 800; color: var(--slate-900); margin: 0;">Selamat! Anda Telah Menyelesaikan Kelas 🎉</h4>
+                            <p style="font-size: 0.8rem; color: #64748b;">Silakan unduh sertifikat penghargaan Anda di bawah ini.</p>
+                        </div>
+                        <button type="button" id="btn-download-cert" onclick="downloadSertifikat()" class="btn-primary" style="background: var(--slate-900); width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i data-lucide="download" style="width: 1.2rem; height: 1.2rem;"></i> 
+                            <span id="text-download-cert">DOWNLOAD SERTIFIKAT (PDF)</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <aside class="playlist-sidebar">
-            <div class="playlist-header">
-                <h3 class="playlist-title">Kurikulum</h3>
-                <span id="video-count" class="playlist-count">0 Video</span>
-            </div>
-            
-            <div id="video-playlist" class="playlist-scroll custom-scroll">
-                </div>
+        <aside class="sidebar-list">
+            <h3 style="font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="play-circle" class="text-brand-blue"></i> Daftar Materi
+            </h3>
+            <div id="playlist-container"></div>
         </aside>
-
     </main>
 
+    <div id="cert-wrapper" style="position: absolute; left: -9999px; top: -9999px; z-index: -9999;">
+        <div id="certificate-template" style="width: 1120px; height: 790px; padding: 40px; background: white; position: relative; border: 15px solid var(--brand-blue); box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; text-align: center;">
+            <div style="border: 5px solid #1e293b; height: 100%; width: 100%; box-sizing: border-box; padding: 50px; position: relative;">
+                <h1 style="font-size: 60px; font-weight: 900; margin: 0; color: var(--brand-blue); letter-spacing: 5px;">SERTIFIKAT</h1>
+                <h3 style="font-size: 20px; font-weight: 700; margin: 10px 0 50px; letter-spacing: 10px; color: #64748b;">PENGHARGAAN</h3>
+                <p style="font-size: 18px; margin-bottom: 10px;">Diberikan Kepada :</p>
+                <h2 id="cert-user-name" style="font-size: 45px; font-weight: 800; margin: 0 0 10px; border-bottom: 2px solid #1e293b; display: inline-block; padding: 0 50px;">NAMA MEMBER</h2>
+                <p style="font-size: 18px; margin-top: 40px; line-height: 1.6;">Atas keberhasilannya dalam menyelesaikan seluruh rangkaian kelas :</p>
+                <h3 id="cert-course-name" style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 10px 0;">NAMA PRODUK / KELAS</h3>
+                <p style="font-size: 14px; color: #64748b; margin-top: 30px;">Diterbitkan pada tanggal: <span id="cert-date">-</span></p>
+                <div style="margin-top: 60px; display: flex; justify-content: space-around; align-items: flex-end;">
+                    <div style="text-align: center; width: 300px;">
+                        <p id="cert-leader1" style="font-weight: 800; margin: 0; font-size: 18px;">Leader Name 1</p>
+                        <p id="cert-role1" style="font-size: 14px; color: #64748b; margin: 5px 0 0;">Jabatan 1</p>
+                    </div>
+                    <div style="text-align: center;">
+                         <div id="cert-stamp-text" style="border: 4px double var(--brand-blue); color: var(--brand-blue); padding: 10px; border-radius: 10px; font-weight: 900; transform: rotate(-5deg); font-size: 12px; opacity: 0.7;">ORIGINAL CERTIFICATE</div>
+                    </div>
+                    <div style="text-align: center; width: 300px;">
+                        <p id="cert-leader2" style="font-weight: 800; margin: 0; font-size: 18px;">Leader Name 2</p>
+                        <p id="cert-role2" style="font-size: 14px; color: #64748b; margin: 5px 0 0;">Jabatan 2</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        (function() {
-            window.waAdminGlobal = '';
-            function applyBrandingSapuJagat(data) {
-                if(data.site_favicon) {
-                    let link = document.querySelector("link[rel~='icon']");
-                    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-                    link.href = data.site_favicon;
-                }
-                if(data.wa_admin) window.waAdminGlobal = data.wa_admin;
-                
-                if(data.site_name) {
-                    if (!document.title.includes(data.site_name)) { document.title = "Ruang Belajar - " + data.site_name; }
-                    const updateDomElements = () => { document.querySelectorAll('.dyn-site-name').forEach(el => { el.innerText = data.site_name; }); };
-                    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', updateDomElements); } else { updateDomElements(); }
+        let player;
+        let playlist = [];
+        let certData = {};
+        let courseDefaultDescription = "";
+        let currentIndex = 0;
+        let progressInterval;
+        let blockerTimeout; 
+
+        function applyBrandSettings(data) {
+            if(data.site_favicon) {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+                link.href = data.site_favicon;
+            }
+            if(data.theme_color) {
+                let themeStyle = document.getElementById('dynamic-theme');
+                if (!themeStyle) { themeStyle = document.createElement('style'); themeStyle.id = 'dynamic-theme'; document.head.appendChild(themeStyle); }
+                themeStyle.innerHTML = `:root { --brand-blue: ${data.theme_color} !important; } .bg-brand-blue, .btn-primary { background-color: ${data.theme_color} !important; } .text-brand-blue { color: ${data.theme_color} !important; } .video-item.active { background-color: ${data.theme_color}15 !important; border-color: ${data.theme_color} !important; } .spinner { border-top-color: ${data.theme_color} !important; } #cert-btn-area { border-color: ${data.theme_color}; background: ${data.theme_color}08; } .custom-play-btn, .progress-filled { background-color: ${data.theme_color}; }`;
+            }
+            if(data.site_name) {
+                document.title = "Ruang Belajar - " + data.site_name;
+                document.querySelectorAll('.dyn-site-name').forEach(el => { el.innerText = data.site_name; });
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"]/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char];
+            });
+        }
+
+        function prepareDescriptionHtml(value) {
+            const text = String(value || '').trim();
+            if (!text) return '';
+            if (/<\/?[a-z][\s\S]*>/i.test(text)) return text;
+
+            return escapeHtml(text)
+                .split(/\n{2,}/)
+                .map(block => `<p>${block.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        function setDescriptionHtml(targetId, html, emptyText) {
+            const descEl = document.getElementById(targetId);
+            if (!descEl) return;
+            const rawHtml = String(html || '').trim();
+
+            if (!rawHtml) {
+                descEl.innerHTML = `<em style="color:#94a3b8;">${escapeHtml(emptyText || 'Deskripsi belum tersedia.')}</em>`;
+                return;
+            }
+
+            // DOMPurify membuat isian HTML di deskripsi lebih aman.
+            // Script/event berbahaya seperti <script> atau onclick akan dibersihkan.
+            const cleanHtml = window.DOMPurify
+                ? DOMPurify.sanitize(prepareDescriptionHtml(rawHtml), {
+                    ADD_TAGS: ['iframe'],
+                    ADD_ATTR: ['target', 'rel', 'allow', 'allowfullscreen', 'frameborder', 'scrolling', 'style', 'class'],
+                    FORBID_TAGS: ['script', 'object', 'embed'],
+                    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus']
+                })
+                : prepareDescriptionHtml(rawHtml);
+
+            descEl.innerHTML = cleanHtml;
+
+            // Semua link dari deskripsi dibuka di tab baru.
+            descEl.querySelectorAll('a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+        }
+
+        function setCourseDescription(html) {
+            setDescriptionHtml('course-desc', html, 'Deskripsi umum kelas belum tersedia.');
+        }
+
+        function setVideoDescription(html) {
+            setDescriptionHtml('video-desc', html, 'Belum ada catatan khusus untuk video ini.');
+        }
+
+        function getVideoDescription(videoItem) {
+            if (!videoItem || typeof videoItem !== 'object') return '';
+
+            // Support beberapa kemungkinan nama field dari backend/admin.
+            const possibleKeys = [
+                'deskripsi',
+                'description',
+                'desc',
+                'detail',
+                'materi_deskripsi',
+                'video_deskripsi',
+                'catatan',
+                'content',
+                'html'
+            ];
+
+            for (const key of possibleKeys) {
+                if (videoItem[key] !== undefined && String(videoItem[key]).trim() !== '') {
+                    return videoItem[key];
                 }
             }
 
-            const cachedStr = localStorage.getItem('melimpah_global_settings');
-            if (cachedStr) { try { applyBrandingSapuJagat(JSON.parse(cachedStr).data); } catch(e){} }
-
-            window.addEventListener('DOMContentLoaded', () => {
-                if(typeof SCRIPT_URL !== 'undefined' && SCRIPT_URL !== 'ISI_DENGAN_LINK_WEB_APP_GOOGLE_SCRIPT_ANDA_DISINI' && SCRIPT_URL !== '') {
-                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'get_global_settings' }) })
-                    .then(res => res.json())
-                    .then(r => {
-                        if(r.status === 'success') {
-                            localStorage.setItem('melimpah_global_settings', JSON.stringify({ data: r.data, time: Date.now() }));
-                            applyBrandingSapuJagat(r.data); 
-                        }
-                    }).catch(e => console.log('Branding sync skipped.'));
-                }
-            });
-        })();
-
-        // === CORE LOGIC ===
-        let globalVideos = [];
+            return '';
+        }
 
         async function verifyAndLoad() {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            const userEmail = sessionStorage.getItem('user_email');
-
-            if (!productId) {
-                alert("Link materi tidak valid (ID Produk hilang).");
-                window.location.replace('/dashboard');
-                return;
-            }
+            if (!productId) { window.location.replace('/member'); return; }
 
             try {
-                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
-                const res = await fetch(targetUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_lms_materi', email: userEmail, product_id: productId })
-                });
+                const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
+                const [setRes, lmsRes, prodRes] = await Promise.all([
+                    fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_global_settings' }) }).then(r => r.json()),
+                    fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_lms_materi', id: productId }) }).then(r => r.json()),
+                    fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_product', id: productId }) }).then(r => r.json())
+                ]);
+
+                if (setRes.status === 'success') applyBrandSettings(setRes.data);
                 
-                const r = await res.json();
-
-                if (r.status === 'success') {
-                    document.getElementById('header-product-id').innerText = "Produk: " + r.data.product_id;
-                    document.getElementById('lms-desc').innerHTML = r.data.desc || "<i>Belum ada deskripsi untuk kelas ini.</i>";
+                if (lmsRes.status === 'success' && lmsRes.data) {
+                    certData = lmsRes.data;
+                    if (prodRes.status === 'success' && prodRes.data) certData.product_full_name = prodRes.data.title;
                     
-                    globalVideos = r.data.videos;
-                    document.getElementById('video-count').innerText = globalVideos.length + " Video";
-                    
-                    if (globalVideos.length > 0) {
+                    playlist = JSON.parse(lmsRes.data.videos || "[]");
+                    courseDefaultDescription = lmsRes.data.deskripsi || '';
+                    setCourseDescription(courseDefaultDescription);
+                    setVideoDescription('');
+                    console.log('Data playlist LMS:', playlist);
+                    if (playlist.length > 0) {
                         renderPlaylist();
-                        playVideo(0); 
+                        playVideo(playlist[0].id, playlist[0].title, 0);
                     } else {
-                        document.getElementById('video-playlist').innerHTML = `<p style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 2.5rem;">Belum ada video ditambahkan.</p>`;
+                        document.getElementById('current-video-title').innerText = "Materi Belum Tersedia";
                     }
-
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('header-ui').classList.remove('hidden');
-                    document.getElementById('main-ui').classList.remove('hidden');
-                    lucide.createIcons();
-                } else {
-                    alert("AKSES DITOLAK: " + r.message);
-                    window.location.replace('/dashboard');
                 }
-            } catch (e) {
-                alert("Terjadi kesalahan sistem saat memverifikasi data.");
-                window.location.replace('/dashboard');
+            } catch (err) { console.error(err); } 
+            finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+                if(typeof lucide !== 'undefined') lucide.createIcons();
             }
         }
 
         function renderPlaylist() {
-            const container = document.getElementById('video-playlist');
-            let html = '';
-            
-            globalVideos.forEach((vid, index) => {
-                html += `
-                <button onclick="playVideo(${index})" id="vid-btn-${index}" class="module-item">
-                    <i data-lucide="play-circle" class="module-icon"></i>
-                    <div class="module-text-wrap">
-                        <h5 class="module-title">${vid.title}</h5>
-                        <p class="module-session">Sesi ${index + 1}</p>
-                    </div>
-                </button>
+            const container = document.getElementById('playlist-container');
+            container.innerHTML = '';
+
+            playlist.forEach((v, i) => {
+                const item = document.createElement('div');
+                item.className = 'video-item';
+                item.id = 'vid-item-' + i;
+                item.onclick = () => playVideo(v.id, v.title, i);
+                item.innerHTML = `
+                    <div style="background: #f1f5f9; width: 2rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; flex-shrink: 0;">${i + 1}</div>
+                    <div style="flex-grow: 1;"><p style="font-size: 0.8rem; font-weight: 700; line-height: 1.3; margin:0;">${escapeHtml(v.title)}</p></div>
                 `;
+                container.appendChild(item);
             });
-            container.innerHTML = html;
         }
 
-        function playVideo(index) {
-            const vid = globalVideos[index];
-            if(!vid) return;
+        function playVideo(id, title, index) {
+            currentIndex = index;
+            const selectedVideo = playlist[index] || {};
+            document.getElementById('current-video-title').innerText = title || selectedVideo.title || 'Materi Video';
+            setCourseDescription(courseDefaultDescription);
+            setVideoDescription(getVideoDescription(selectedVideo));
+            document.querySelectorAll('.video-item').forEach(item => item.classList.remove('active'));
+            const el = document.getElementById('vid-item-' + index);
+            if (el) el.classList.add('active');
 
-            document.getElementById('video-frame').src = `https://www.youtube.com/embed/${vid.id}?rel=0&modestbranding=1&autoplay=1`;
-            document.getElementById('lms-title').innerText = vid.title;
-
-            // Reset all active classes
-            document.querySelectorAll('.module-item').forEach(btn => btn.classList.remove('active'));
+            const overlay = document.getElementById('custom-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('custom-play-btn').classList.remove('loading');
+            document.getElementById('custom-thumbnail').src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+            document.getElementById('progress-filled').style.width = '0%';
+            document.getElementById('time-text').innerText = '0:00 / 0:00';
+            document.getElementById('video-container').classList.add('paused');
+            document.getElementById('icon-play').style.display = 'block';
+            document.getElementById('icon-pause').style.display = 'none';
             
-            // Set active class to clicked button
-            const activeBtn = document.getElementById(`vid-btn-${index}`);
-            if(activeBtn) {
-                activeBtn.classList.add('active');
+            // Reset Masking Atas dan Bawah
+            document.getElementById('yt-blocker-top').style.opacity = '1';
+            document.getElementById('yt-blocker-bottom').style.opacity = '1';
+
+            if (!player) {
+                player = new YT.Player('player', {
+                    height: '100%', width: '100%', videoId: id,
+                    playerVars: { 
+                        'autoplay': 0, 
+                        'rel': 0, 
+                        'modestbranding': 1,
+                        'iv_load_policy': 3, 
+                        'controls': 0, 
+                        'disablekb': 1,      
+                        'fs': 0 
+                    },
+                    events: { 'onStateChange': onPlayerStateChange }
+                });
+            } else {
+                player.cueVideoById(id);
             }
-            
-            lucide.createIcons();
         }
 
-        window.onload = () => {
-            if(typeof lucide !== 'undefined') lucide.createIcons();
-            verifyAndLoad();
-        };
+        function startVideo() {
+            if (player && typeof player.playVideo === 'function') {
+                document.getElementById('custom-play-btn').classList.add('loading');
+                player.playVideo();
+            }
+        }
+
+        function togglePlay() {
+            if (!player || typeof player.getPlayerState !== 'function') return;
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function seekVideo(e) {
+            if (!player || typeof player.getDuration !== 'function') return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            const newTime = percent * player.getDuration();
+            player.seekTo(newTime, true);
+        }
+
+        function formatTime(sec) {
+            sec = Math.floor(sec) || 0;
+            let m = Math.floor(sec / 60);
+            let s = sec % 60;
+            return m + ":" + (s < 10 ? "0" + s : s);
+        }
+
+        function updateProgress() {
+            if (!player || typeof player.getCurrentTime !== 'function') return;
+            const current = player.getCurrentTime();
+            const duration = player.getDuration();
+            if (duration > 0) {
+                const percent = (current / duration) * 100;
+                document.getElementById('progress-filled').style.width = percent + '%';
+                document.getElementById('time-text').innerText = formatTime(current) + ' / ' + formatTime(duration);
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            const container = document.getElementById('video-container');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            const blockerTop = document.getElementById('yt-blocker-top');
+            const blockerBottom = document.getElementById('yt-blocker-bottom');
+            
+            if (event.data == YT.PlayerState.PLAYING) {
+                document.getElementById('custom-overlay').style.display = 'none';
+                document.getElementById('custom-play-btn').classList.remove('loading');
+                
+                container.classList.remove('paused');
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+                if(!progressInterval) progressInterval = setInterval(updateProgress, 500);
+
+                // Bayangan atas dan bawah akan memudar setelah 5 Detik
+                clearTimeout(blockerTimeout);
+                blockerTimeout = setTimeout(() => {
+                    if(player.getPlayerState() === YT.PlayerState.PLAYING) {
+                        blockerTop.style.opacity = '0';
+                        blockerBottom.style.opacity = '0';
+                    }
+                }, 5000);
+
+            } else {
+                container.classList.add('paused');
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+                
+                // Munculkan kembali bayangan saat di-pause
+                clearTimeout(blockerTimeout);
+                blockerTop.style.opacity = '1';
+                blockerBottom.style.opacity = '1';
+
+                if (event.data == YT.PlayerState.ENDED) {
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                    if (currentIndex === playlist.length - 1) {
+                        document.getElementById('cert-btn-area').style.display = 'block';
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                        Swal.fire({ icon: 'success', title: 'Kelas Selesai!', text: 'Sertifikat Anda sudah siap diunduh.', confirmButtonColor: '#00AAE7' });
+                    }
+                }
+            }
+        }
+
+        function downloadSertifikat() {
+            try {
+                const btn = document.getElementById('btn-download-cert');
+                const txt = document.getElementById('text-download-cert');
+                const oriText = txt.innerText;
+                
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                txt.innerText = 'MEMPROSES PDF...';
+                showToast('Menyiapkan Sertifikat PDF...', 'warning');
+
+                const memberName = sessionStorage.getItem('user_nama') || 'MEMBER';
+                const courseName = certData.product_full_name || 'KELAS ONLINE';
+                
+                document.getElementById('cert-user-name').innerText = memberName.toUpperCase();
+                document.getElementById('cert-course-name').innerText = courseName.toUpperCase();
+                document.getElementById('cert-date').innerText = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+                
+                document.getElementById('cert-leader1').innerText = certData.cert_leader1 || 'Administrator';
+                document.getElementById('cert-role1').innerText = certData.cert_role1 || 'Direktur Utama';
+                document.getElementById('cert-leader2').innerText = certData.cert_leader2 || '';
+                document.getElementById('cert-role2').innerText = certData.cert_role2 || '';
+                document.getElementById('cert-stamp-text').innerText = certData.cert_stamp || 'VERIFIED';
+
+                const element = document.getElementById('certificate-template');
+                
+                const opt = {
+                    margin: 0,
+                    filename: `Sertifikat_${memberName.replace(/\s+/g, '_')}.pdf`,
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0, width: 1120, height: 790 },
+                    jsPDF: { unit: 'px', format: [1120, 790], orientation: 'landscape' }
+                };
+
+                setTimeout(() => {
+                    if (typeof html2pdf === 'undefined') {
+                        showToast('Library PDF gagal dimuat. Harap refresh halaman.', 'error');
+                        txt.innerText = oriText;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        return;
+                    }
+
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        showToast('Sertifikat berhasil diunduh!', 'success');
+                        txt.innerText = oriText;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }).catch(err => {
+                        console.error(err);
+                        showToast('Gagal memproses PDF.', 'error');
+                        txt.innerText = oriText;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    });
+                }, 800);
+                
+            } catch (error) {
+                console.error(error);
+                showToast('Error sistem: ' + error.message, 'error');
+                document.getElementById('btn-download-cert').disabled = false;
+            }
+        }
+        
+        function showToast(m, t = 'success') {
+            const c = document.getElementById('toast-container');
+            const e = document.createElement('div');
+            e.className = `toast ${t}`;
+            let icon = t === 'error' ? 'x-circle' : (t === 'warning' ? 'alert-triangle' : 'check-circle');
+            e.innerHTML = `<i data-lucide="${icon}"></i> <span>${m}</span>`;
+            c.appendChild(e);
+            lucide.createIcons({ root: e });
+            setTimeout(() => e.classList.add('show'), 10);
+            setTimeout(() => { e.classList.remove('show'); setTimeout(() => e.remove(), 300); }, 3000);
+        }
+
+        window.onload = () => { verifyAndLoad(); };
     </script>
 </body>
 </html>

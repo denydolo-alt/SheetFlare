@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memuat Halaman...</title>
+    
+    <script src="/config.js?v=2026"></script>
+    
+    <script>
+        // ==========================================
+        // FORMULA WARNA TEMA DINAMIS (THEME INJECTOR)
+        // ==========================================
+        (function() {
+            const CACHE_KEY = 'melimpah_global_settings';
+
+            function applyBrandSettings(data) {
+                if(data.site_favicon) {
+                    let link = document.querySelector("link[rel~='icon']");
+                    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+                    link.href = data.site_favicon;
+                }
+                
+                if(data.theme_color) {
+                    let themeStyle = document.getElementById('dynamic-theme');
+                    if (!themeStyle) {
+                        themeStyle = document.createElement('style');
+                        themeStyle.id = 'dynamic-theme';
+                        document.head.appendChild(themeStyle);
+                    }
+                    themeStyle.innerHTML = `
+                        :root {
+                            --brand-blue: ${data.theme_color} !important;
+                        }
+                        .btn-home, .btn-primary-dynamic { background-color: ${data.theme_color} !important; color: white !important; }
+                        .btn-home:hover, .btn-primary-dynamic:hover { opacity: 0.85 !important; }
+                        .spinner { border-top-color: ${data.theme_color} !important; }
+                    `;
+                }
+            }
+
+            try {
+                let cachedSet = localStorage.getItem(CACHE_KEY);
+                if(cachedSet) { 
+                    let parsed = JSON.parse(cachedSet);
+                    let d = parsed.data ? parsed.data : parsed; 
+                    applyBrandSettings(d);
+                }
+            } catch(e){}
+            
+            if(typeof window.SCRIPT_URL !== 'undefined' || typeof SCRIPT_URL !== 'undefined') {
+                const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
+                fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_global_settings' }) })
+                .then(res => res.json())
+                .then(r => {
+                    if(r.status === 'success' && r.data) { 
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({ data: r.data, time: Date.now() })); 
+                        applyBrandSettings(r.data);
+                    }
+                }).catch(e => {});
+            }
+        })();
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; background-color: #f1f5f9; color: #0f172a; }
+        #cms-wrapper { padding: 2rem 1rem; min-height: 100vh; }
+        #cms-content { max-width: 800px; margin: 0 auto; padding: 2.5rem; background: white; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        #loading { text-align: center; padding: 20vh 20px; }
+        .spinner { width: 3rem; height: 3rem; border: 4px solid #e0f7ff; border-top-color: #00AAE7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .not-found { display: none; text-align: center; padding: 15vh 20px; }
+        .not-found h1 { font-size: 6rem; font-weight: 900; color: #cbd5e1; margin: 0; line-height: 1; }
+        .not-found h3 { font-size: 1.5rem; font-weight: 800; color: #334155; margin-bottom: 0.5rem; }
+        .btn-home { display: inline-flex; align-items: center; justify-content: center; padding: 0.875rem 1.5rem; background: #00AAE7; color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 800; }
+        .judul-halaman { font-size: 2.25rem; font-weight: 900; margin-top: 0; margin-bottom: 1.5rem; color: #0f172a; line-height: 1.2; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div id="social-proof-toast" style="position: fixed; bottom: -120px; left: 20px; background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; z-index: 99999; transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); max-width: 320px; opacity: 0; pointer-events: none;">
+        <div style="background: #1e3a8a; /* Warna biru tua seperti gambar */ color: white; width: 44px; height: 44px; border-radius: 10px; /* Melengkung kotak */ display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="#cbd5e1" /* Warna lonceng (abu-abu muda keperakan) */></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#f59e0b" /* Warna pemukul (oranye/kuning) */ fill="#f59e0b"></path>
+            </svg>
+        </div>
+        <div>
+            <p id="sp-name" style="margin: 0; font-size: 0.85rem; font-weight: 800; color: #0f172a;">...</p>
+            <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #475569;">Baru saja membeli <span id="sp-prod" style="font-weight: 700; color: #00AAE7;">...</span></p>
+            <p id="sp-time" style="margin: 2px 0 0 0; font-size: 0.65rem; font-weight: 600; color: #94a3b8;">...</p>
+        </div>
+    </div>
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2 style="color: #64748b; font-weight: 700; font-size: 1.25rem;">Membuka Halaman...</h2>
+    </div>
+
+    <div id="cms-wrapper" style="display: none;">
+        <div id="cms-content"></div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/" style="font-size: 0.875rem; color: #94a3b8; text-decoration: none; font-weight: 600;">&larr; Kembali ke Beranda</a>
+        </div>
+    </div>
+
+    <div id="error-404" class="not-found">
+        <h1>404</h1><h3>Halaman Tidak Ditemukan</h3>
+        <p>URL yang dituju salah atau halaman rahasia ini menolak akses Anda.</p>
+        <a href="/" class="btn-home">Beranda</a>
+    </div>
+
+    <script>
+        async function loadCMS() {
+            const slug = window.location.pathname.replace(/^\/|\/$/g, '');
+            if (!slug) { window.location.href = '/'; return; }
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                if (!targetUrl) throw new Error("Endpoint URL tidak ditemukan");
+
+                const res = await fetch(targetUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'get_page_content', slug: slug }) 
+                });
+                
+                const r = await res.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (r.status === 'success') {
+                    document.title = r.title;
+                    let html = r.content;
+                    if(!html.includes('style="font-family:')) { html = `<h1 class="judul-halaman">${r.title}</h1>` + html; }
+                    
+                    document.getElementById('cms-content').innerHTML = html;
+                    document.getElementById('cms-wrapper').style.display = 'block';
+                    
+                    // ==========================================
+                    // 🔥 MESIN GATEKEEPER LEGAL (ANTI BLOKIR) 🔥
+                    // ==========================================
+                    const lock = document.getElementById('sf-loading-lock');
+                    const wrapper = document.getElementById('sf-secret-wrapper');
+                    
+                    if (lock && wrapper) {
+                        const statusText = document.getElementById('sf-status-text');
+                        const protectId = wrapper.getAttribute('data-lock');
+                        
+                        const showError = (msg) => {
+                            lock.innerHTML = `<div style="text-align:center; padding: 3rem 1rem;"><h2 style="color:#e11d48; margin-bottom:1rem; font-weight:900;">Akses Ditolak</h2><p style="color:#475569; margin-bottom:1.5rem;">${msg}</p><a href="/member" class="btn-primary-dynamic" style="padding:0.75rem 2rem;border-radius:0.5rem;text-decoration:none;font-weight:bold;display:inline-block;background:#0f172a;color:white;">Login Area</a></div>`;
+                        };
+
+                        try {
+                            if (statusText) statusText.innerText = "Langkah 1: Mengecek Sesi Login...";
+                            
+                            let em = localStorage.getItem('member_email') || sessionStorage.getItem('member_email') || localStorage.getItem('email') || sessionStorage.getItem('email');
+                            if (!em) {
+                                for(let i=0; i<localStorage.length; i++){
+                                    let v = localStorage.getItem(localStorage.key(i));
+                                    if(v && v.includes('email')){
+                                        try { let p = JSON.parse(v); if(p.email) em = p.email; } catch(e){}
+                                    }
+                                }
+                            }
+                            
+                            if (!em) {
+                                showError('Halaman eksklusif. Anda belum Login.');
+                                return;
+                            }
+
+                            if (statusText) statusText.innerText = "Langkah 2: Menghubungi D1 Cloudflare...";
+                            
+                            const checkRes = await fetch(targetUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'get_products', email: em })
+                            });
+
+                            if (!checkRes.ok) throw new Error("HTTP Error: " + checkRes.status);
+
+                            if (statusText) statusText.innerText = "Langkah 3: Membuka Gembok...";
+                            const checkData = await checkRes.json();
+
+                            if (checkData.status === 'success') {
+                                const owned = checkData.owned || [];
+                                const pass = owned.some(p => String(p.id).toUpperCase() === String(protectId).toUpperCase());
+                                
+                                if (pass) {
+                                    // BERHASIL! BUKA GEMBOK!
+                                    lock.style.display = 'none';
+                                    wrapper.style.display = 'block';
+                                } else {
+                                    showError(`Anda belum membeli produk dengan ID: ${protectId} atau pesanan belum lunas.`);
+                                }
+                            } else {
+                                showError("Gagal memverifikasi di database. " + (checkData.message || ""));
+                            }
+
+                        } catch(err) {
+                            lock.innerHTML = `<div style="text-align:center; padding: 3rem 1rem;"><h2 style="color:#f59e0b; margin-bottom:1rem; font-weight:900;">Error Koneksi</h2><p style="color:#475569; margin-bottom:1.5rem;">${err.message}</p><button onclick="location.reload()" class="btn-primary-dynamic" style="padding:0.75rem 2rem;border-radius:0.5rem;font-weight:bold;border:none;cursor:pointer;background:#0f172a;color:white;">Refresh</button></div>`;
+                        }
+                    }
+                } 
+                else { 
+                    document.getElementById('error-404').style.display = 'block'; document.title = '404 - Tidak Ditemukan'; 
+                }
+            } catch (e) { 
+                document.getElementById('loading').style.display = 'none'; document.getElementById('error-404').style.display = 'block'; document.title = 'Error Sistem'; 
+            }
+        }
+
+        // 🚀 FUNGSI MENJALANKAN SOCIAL PROOF (DIREVISI)
+        async function initSocialProof() {
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                if (!targetUrl) return; // Mencegah fetch null
+                
+                const res = await fetch(targetUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'get_social_proof' }) 
+                });
+                const r = await res.json();
+                
+                if(r.status === 'success' && r.data && r.data.length > 0) {
+                    const proofs = r.data;
+                    let currentIndex = 0;
+                    const toast = document.getElementById('social-proof-toast');
+                    
+                    // Buat fungsi terpisah agar bisa dipanggil langsung tanpa menunggu interval pertama
+                    const showToast = () => {
+                        const p = proofs[currentIndex];
+                        document.getElementById('sp-name').innerText = p.name;
+                        document.getElementById('sp-prod').innerText = p.product;
+                        document.getElementById('sp-time').innerText = p.time;
+                        
+                        // Munculkan Pop-up
+                        toast.style.bottom = '20px';
+                        toast.style.opacity = '1';
+                        
+                        // Sembunyikan setelah 5 detik
+                        setTimeout(() => {
+                            toast.style.bottom = '-120px';
+                            toast.style.opacity = '0';
+                        }, 5000); 
+                        
+                        currentIndex = (currentIndex + 1) % proofs.length;
+                    };
+
+                    // Jeda awal 3 detik, langsung tampilkan popup pertama
+                    setTimeout(() => {
+                        showToast(); // Panggil manual pertama kali
+                        setInterval(showToast, 12000); // Set interval untuk popup selanjutnya (12 detik)
+                    }, 3000);
+                }
+            } catch(e) {
+                console.error("Social Proof Error:", e);
+            }
+        }
+
+        // PANGGIL KEDUA FUNGSI SECARA PARALEL DAN INDEPENDEN
+        loadCMS();
+        initSocialProof();
+    </script>
+</body>
+</html>

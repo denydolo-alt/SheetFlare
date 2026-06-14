@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - SheetFlare</title>
+    <title>Checkout - Sistem</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,20 +11,138 @@
     <script src="config.js?v=2026"></script>
 
     <script>
+        function injectMetaPixel(pixelId) {
+            if(!pixelId || pixelId.trim() === "") return;
+            if(window.fbq) return; 
+
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            
+            fbq('init', pixelId);
+            fbq('track', 'PageView');
+            console.log("🔥 Meta Pixel Aktif: " + pixelId);
+        }
+
         (function() {
             const CACHE_KEY = 'melimpah_global_settings';
-            let cachedFav = localStorage.getItem('site_favicon');
-            if(cachedFav) { let link = document.createElement('link'); link.rel = 'icon'; link.href = cachedFav; document.head.appendChild(link); }
+
+            function applyBrandSettings(data) {
+                // 1. Favicon
+                if(data.site_favicon) {
+                    let link = document.querySelector("link[rel~='icon']");
+                    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+                    link.href = data.site_favicon;
+                }
+
+                // 2. Meta Pixel
+                const pixelId = String(
+    data.meta_pixel_id || ''
+).trim();
+
+if (
+    pixelId &&
+    pixelId !== 'null' &&
+    pixelId !== 'undefined' &&
+    /^\d{8,20}$/.test(pixelId)
+) {
+    injectMetaPixel(pixelId);
+}
+
+                // 3. Nama Website
+                if(data.site_name) {
+                    document.title = "Checkout - " + data.site_name;
+                }
+
+                // ==========================================
+                // 4. SUPER THEME INJECTOR (CHECKOUT EDITION)
+                // ==========================================
+                if(data.theme_color) {
+                    let themeStyle = document.getElementById('dynamic-theme');
+                    if (!themeStyle) {
+                        themeStyle = document.createElement('style');
+                        themeStyle.id = 'dynamic-theme';
+                        document.head.appendChild(themeStyle);
+                    }
+                    themeStyle.innerHTML = `
+                        :root {
+                            --brand-blue: ${data.theme_color} !important;
+                            --brand-blue-hover: ${data.theme_color}e6 !important;
+                            --brand-blue-light: ${data.theme_color}1a !important;
+                        }
+                        
+                        .btn-submit, .btn-apply, .card-header, .toast.success, .check-icon { 
+                            background-color: var(--brand-blue) !important; 
+                        }
+                        .total-price, #affiliate-id-display, #temp-pass, #succ-bank-norek, .coupon-label { 
+                            color: var(--brand-blue) !important; 
+                        }
+                        
+                        .btn-submit:hover, .btn-apply:hover { background-color: var(--brand-blue-hover) !important; }
+                        .btn-submit { box-shadow: 0 8px 20px ${data.theme_color}4d !important; }
+                        
+                        .form-input:focus { border-color: var(--brand-blue) !important; box-shadow: 0 0 0 2px var(--brand-blue-light) !important; }
+                        .loader-ring { border-color: var(--brand-blue-light) !important; border-top-color: var(--brand-blue) !important; }
+                        #processing-overlay .loader-ring { border-top-color: white !important; }
+                        
+                        .coupon-box { background-color: var(--brand-blue-light) !important; border-color: ${data.theme_color}33 !important; }
+                        .pay-card input[type="radio"]:checked + label {
+                            border-color: var(--brand-blue) !important;
+                            background-color: var(--brand-blue-light) !important;
+                            box-shadow: 0 4px 12px ${data.theme_color}1a !important;
+                        }
+                        .success-icon { background-color: var(--brand-blue-light) !important; color: var(--brand-blue) !important; }
+                        #temp-pass { background-color: var(--brand-blue-light) !important; border-color: ${data.theme_color}33 !important; }
+                    `;
+                }
+            }
+
             try {
                 let cachedSet = localStorage.getItem(CACHE_KEY);
-                if(cachedSet) { let d = JSON.parse(cachedSet).data; if(d.site_name) document.title = `Checkout - ${d.site_name}`; }
-            }catch(e){}
+                if(cachedSet) { 
+                    let parsed = JSON.parse(cachedSet);
+                    let d = parsed.data ? parsed.data : parsed;
+
+if (
+    d.meta_pixel_id === 'null' ||
+    d.meta_pixel_id === 'undefined'
+) {
+    d.meta_pixel_id = '';
+}
+
+applyBrandSettings(d);
+                }
+            } catch(e){}
             
-            // Background fetch setting
             if(typeof window.SCRIPT_URL !== 'undefined' || typeof SCRIPT_URL !== 'undefined') {
                 const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
-                fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_global_settings' }) }).then(res => res.json()).then(r => {
-                    if(r.status === 'success' && r.data) { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: r.data, time: Date.now() })); if(r.data.site_favicon && cachedFav !== r.data.site_favicon) { localStorage.setItem('site_favicon', r.data.site_favicon); } }
+                fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'get_global_settings' }) })
+                .then(res => res.json())
+                .then(r => {
+                    if(r.status === 'success' && r.data) {
+
+    if (
+        r.data.meta_pixel_id === 'null' ||
+        r.data.meta_pixel_id === 'undefined'
+    ) {
+        r.data.meta_pixel_id = '';
+    }
+
+    localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+            data: r.data,
+            time: Date.now()
+        })
+    );
+
+    applyBrandSettings(r.data);
+}
                 }).catch(e => {});
             }
         })();
@@ -34,7 +152,13 @@
     
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background-color: #f1f5f9; color: #0f172a; padding-bottom: 2.5rem; }
+        :root {
+            --brand-blue: #00AAE7; --brand-blue-hover: #0092c7; --brand-blue-light: #e0f7ff;
+            --brand-orange: #FF9800; --brand-orange-hover: #e68900; --brand-orange-light: #fff3e0;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b; --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a;
+            --rose-50: #fff1f2; --rose-500: #f43f5e; --rose-600: #e11d48;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background-color: var(--slate-100); color: var(--slate-900); padding-bottom: 2.5rem; }
         a { text-decoration: none; color: inherit; }
         button { cursor: pointer; border: none; background: none; font-family: inherit; }
         input, textarea, select { font-family: inherit; }
@@ -48,14 +172,14 @@
         .font-mono { font-family: monospace; }
         .uppercase { text-transform: uppercase; }
         .tracking-widest { letter-spacing: 0.1em; }
-        .tracking-wide { letter-spacing: 0.025em; }
-        .tracking-tighter { letter-spacing: -0.05em; }
         .container { width: 100%; max-width: 32rem; margin: 0 auto; padding: 1rem; }
         @media (min-width: 640px) { .container { padding-top: 2.5rem; } }
         #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 350px;}
         .toast { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 700; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); pointer-events: auto;}
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background-color: #10b981; } .toast.error { background-color: #ef4444; } .toast.warning { background-color: #f59e0b; }
+        .toast.success { background-color: var(--brand-blue); } 
+        .toast.error { background-color: var(--rose-500); } 
+        .toast.warning { background-color: var(--brand-orange); }
         .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
         .fade-in-up.show { opacity: 1; transform: translateY(0); }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -65,80 +189,85 @@
         .overlay { position: fixed; inset: 0; background-color: white; z-index: 150; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.7s ease-in-out; }
         .overlay.dark { background-color: rgba(15, 23, 42, 0.9); z-index: 200; backdrop-filter: blur(4px); }
         .overlay.flex { display: flex !important; }
-        .loader-ring { width: 4rem; height: 4rem; border: 4px solid #d1fae5; border-top-color: #10b981; border-radius: 50%; }
-        .main-card { background-color: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; border-radius: 1rem; overflow: hidden; display: flex; flex-direction: column; }
-        .card-header { background-color: #10b981; color: white; text-align: center; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .loader-ring { width: 4rem; height: 4rem; border: 4px solid var(--brand-blue-light); border-top-color: var(--brand-blue); border-radius: 50%; }
+        .main-card { background-color: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid var(--slate-200); border-radius: 0.5rem; overflow: hidden; display: flex; flex-direction: column; }
+        .card-header { background-color: var(--brand-blue); color: white; text-align: center; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .card-body { padding: 1.25rem; }
         @media (min-width: 768px) { .card-body { padding: 2rem; } }
-        .btn-back { display: inline-flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; transition: color 0.3s; }
-        .btn-back:hover { color: #334155; }
-        .box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; }
-        @media (min-width: 768px) { .box { padding: 1.25rem; } }
-        .box-title { font-size: 0.625rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.375rem; }
+        .btn-back { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--slate-500); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; transition: color 0.3s; }
+        .btn-back:hover { color: var(--slate-800); }
+        .box { background-color: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
+        .box-title { font-size: 0.625rem; color: var(--slate-500); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.375rem; }
         .order-summary-flex { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .order-summary-img-wrap { width: 4rem; height: 4rem; flex-shrink: 0; border-radius: 0.5rem; overflow: hidden; border: 1px solid #e2e8f0; background-color: white; }
+        .order-summary-img-wrap { width: 4rem; height: 4rem; flex-shrink: 0; border-radius: 0.25rem; overflow: hidden; border: 1px solid var(--slate-200); background-color: white; }
         .order-summary-img { width: 100%; height: 100%; object-fit: cover; }
-        .product-name { font-size: 1.125rem; font-weight: 900; color: #1e293b; line-height: 1.25; margin-bottom: 0; }
-        @media (min-width: 768px) { .product-name { font-size: 1.25rem; } }
-        .total-wrap { display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; }
-        .total-price { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.05em; color: #10b981; }
+        .product-name { font-size: 1.125rem; font-weight: 800; color: var(--slate-900); line-height: 1.25; margin-bottom: 0; }
+        .total-wrap { display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--slate-200); padding-top: 0.75rem; }
+        .total-price { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.05em; color: var(--brand-blue); }
         .form-group { margin-bottom: 1rem; position: relative; }
-        .form-input { width: 100%; background-color: white; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.875rem; font-weight: 700; color: #1e293b; outline: none; transition: all 0.3s; }
-        .form-input::placeholder { color: #94a3b8; font-weight: 500; }
-        .form-input:focus { border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
-        .wa-prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: #94a3b8; border-right: 1px solid #e2e8f0; padding-right: 0.75rem; font-size: 0.875rem; }
+        .form-input { width: 100%; background-color: white; border: 1px solid var(--slate-300); border-radius: 0.375rem; padding: 0.75rem; font-size: 0.875rem; font-weight: 600; color: var(--slate-900); outline: none; transition: all 0.2s; }
+        .form-input:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 2px var(--brand-blue-light); }
+        .wa-prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--slate-500); border-right: 1px solid var(--slate-200); padding-right: 0.75rem; font-size: 0.875rem; }
         .input-wa { padding-left: 4rem; }
-        .coupon-box { background-color: #ecfdf5; border: 1px solid #d1fae5; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; }
-        .coupon-label { display: flex; align-items: center; gap: 0.25rem; font-size: 0.625rem; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+        .coupon-box { background-color: var(--brand-blue-light); border: 1px solid #b3e5fc; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
+        .coupon-label { display: flex; align-items: center; gap: 0.25rem; font-size: 0.625rem; font-weight: 800; color: var(--brand-blue-hover); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
         .coupon-flex { display: flex; gap: 0.5rem; }
-        .btn-apply { background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 900; font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; transition: background-color 0.3s; }
-        .btn-apply:hover { background-color: #059669; }
-        .bump-box { border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 1rem; cursor: pointer; transition: all 0.3s; }
-        .bump-box.bump-checked { border-color: #10b981; border-style: solid; background-color: #ecfdf5; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1); }
+        .btn-apply { background-color: var(--brand-blue); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 800; font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; transition: background-color 0.2s; }
+        .bump-box { border: 2px dashed var(--slate-300); border-radius: 0.5rem; padding: 1rem; cursor: pointer; transition: all 0.2s; }
+        .bump-box.bump-checked { border-color: var(--brand-orange); border-style: solid; background-color: var(--brand-orange-light); box-shadow: 0 4px 6px -1px rgba(255, 152, 0, 0.1); }
         .bump-flex { display: flex; align-items: flex-start; gap: 0.75rem; }
-        .bump-checkbox { width: 1rem; height: 1rem; accent-color: #10b981; border-radius: 0.25rem; cursor: pointer; margin-top: 0.125rem; }
-        .bump-title { font-weight: 900; color: #1e293b; font-size: 0.75rem; margin-bottom: 0.25rem; text-decoration: underline; text-decoration-color: #fca5a5; text-underline-offset: 2px; }
-        .bump-desc { font-size: 0.6875rem; color: #475569; margin-bottom: 0.5rem; line-height: 1.5; }
-        .bump-price-badge { font-size: 0.75rem; font-weight: 900; color: #e11d48; background-color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; border: 1px solid #fecdd3; display: inline-block; }
-        .cat-title { font-size: 0.625rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; margin-top: 1rem; display: flex; align-items: center; gap: 0.375rem; }
-        .cat-title::after { content: ""; height: 1px; background-color: #e2e8f0; flex-grow: 1; }
+        .bump-checkbox { width: 1.125rem; height: 1.125rem; accent-color: var(--brand-orange); border-radius: 0.25rem; cursor: pointer; margin-top: 0.125rem; }
+        .bump-title { font-weight: 800; color: var(--slate-900); font-size: 0.875rem; margin-bottom: 0.25rem; text-decoration: underline; text-decoration-color: var(--brand-orange); text-underline-offset: 3px; }
+        .bump-desc { font-size: 0.75rem; color: var(--slate-600); margin-bottom: 0.5rem; line-height: 1.5; }
+        .bump-price-badge { font-size: 0.75rem; font-weight: 800; color: var(--rose-600); background-color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; border: 1px solid var(--rose-100); display: inline-block; }
+        .cat-title { font-size: 0.625rem; font-weight: 800; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; margin-top: 1rem; display: flex; align-items: center; gap: 0.375rem; }
+        .cat-title::after { content: ""; height: 1px; background-color: var(--slate-200); flex-grow: 1; }
         .pay-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+        
+        /* === UPDATE STYLING UNTUK EFEK LOGO 3D & LEBIH BESAR === */
         .pay-card input[type="radio"] { display: none; }
-        .pay-card label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0.5rem; background-color: white; border: 2px solid #e2e8f0; border-radius: 0.75rem; cursor: pointer; transition: all 0.2s ease; position: relative; height: 5.5rem; text-align: center; }
-        .pay-card label:hover { border-color: #6ee7b7; background-color: #f8fafc; }
-        .pay-card input[type="radio"]:checked + label { border-color: #10b981; background-color: #ecfdf5; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); }
-        .check-icon { position: absolute; top: 0.5rem; right: 0.5rem; width: 1.25rem; height: 1.25rem; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: all 0.2s ease; color: white; }
-        .pay-card input[type="radio"]:checked + label .check-icon { opacity: 1; transform: scale(1); }
+        .pay-card label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0.5rem; background-color: white; border: 2px solid var(--slate-200); border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease; position: relative; height: 5.5rem; text-align: center; }
+        .pay-card input[type="radio"]:checked + label { border-color: var(--brand-blue); background-color: var(--brand-blue-light); box-shadow: 0 4px 12px rgba(0, 170, 231, 0.1); }
+        .check-icon { position: absolute; top: 0.5rem; right: 0.5rem; width: 1.25rem; height: 1.25rem; background-color: var(--brand-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0); transition: all 0.2s ease; color: white; }
+        .pay-card input[type="radio"]:checked + label .check-icon { opacity: 1; transform: scale(1); z-index: 10; }
         .check-icon svg { width: 0.75rem; height: 0.75rem; }
-        .pay-logo { display: flex; justify-content: center; align-items: center; height: 1.5rem; margin-bottom: 0.5rem; color: #94a3b8; }
-        .pay-logo img { max-height: 100%; max-width: 3.75rem; object-fit: contain; filter: grayscale(100%); opacity: 0.6; transition: all 0.2s ease; }
-        .pay-card input[type="radio"]:checked + label .pay-logo img { filter: grayscale(0%); opacity: 1; transform: scale(1.05); }
-        .pay-card input[type="radio"]:checked + label .pay-logo { color: #10b981; }
-        .pay-name { font-size: 0.625rem; font-weight: 700; color: #475569; text-align: center; line-height: 1.2; }
-        .pay-card input[type="radio"]:checked + label .pay-name { color: #065f46; }
-        .btn-submit { width: 100%; background-color: #10b981; color: white; border-radius: 0.75rem; padding: 1rem 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; }
-        .btn-submit:hover { background-color: #059669; transform: translateY(-2px); }
-        .btn-submit svg { width: 1rem; height: 1rem; }
-        .success-card { background-color: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid #f1f5f9; padding: 2rem; text-align: center; border-radius: 1rem; margin: 1.5rem auto 0; }
-        .success-icon { width: 4rem; height: 4rem; background-color: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
-        .success-icon svg { width: 2rem; height: 2rem; }
-        .success-title { font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
-        .success-desc { color: #64748b; font-size: 0.875rem; margin-bottom: 2rem; line-height: 1.625; }
-        .new-user-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; text-align: left; display: flex; gap: 0.75rem; }
-        .new-user-icon { color: #10b981; flex-shrink: 0; margin-top: 0.25rem; }
-        .new-user-icon svg { width: 1.25rem; height: 1.25rem; }
-        .btn-wa { width: 100%; background-color: #25D366; color: white; border-radius: 0.75rem; padding: 1rem 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.6875rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.3s; box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
+        
+        /* Membesarkan wadah logo agar tampil maksimal tanpa teks */
+        .pay-logo { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; color: var(--slate-400); }
+        
+        /* Desain awal logo 3D */
+        .pay-logo img { 
+            max-height: 2.5rem; 
+            max-width: 5.5rem; 
+            object-fit: contain; 
+            filter: grayscale(100%) drop-shadow(0px 3px 3px rgba(0,0,0,0.15)); 
+            opacity: 0.6; 
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animasi bouncy/memantul */
+            transform: perspective(400px) translateZ(0) scale(1);
+        }
+        
+        /* Efek 3D ketika dipilih */
+        .pay-card input[type="radio"]:checked + label .pay-logo img { 
+            filter: grayscale(0%) drop-shadow(0px 8px 10px rgba(0,0,0,0.3)); 
+            opacity: 1; 
+            transform: perspective(400px) translateZ(20px) scale(1.3); /* Muncul ke depan / membesar 3D */
+        }
+        
+        /* Sembunyikan Nama Bank */
+        .pay-name { display: none !important; }
+        /* ======================================================== */
+
+        .btn-submit { width: 100%; background-color: var(--brand-blue); color: white; border-radius: 0.375rem; padding: 1rem 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; box-shadow: 0 8px 20px rgba(0, 170, 231, 0.3); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+        .success-card { background-color: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid var(--slate-200); padding: 2rem; text-align: center; border-radius: 0.5rem; margin: 1.5rem auto 0; }
+        .success-icon { width: 4rem; height: 4rem; background-color: var(--brand-blue-light); color: var(--brand-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; transition: all 0.3s; }
+        .success-title { font-size: 1.5rem; font-weight: 800; color: var(--slate-900); letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+        .success-desc { color: var(--slate-500); font-size: 0.875rem; margin-bottom: 2rem; line-height: 1.625; }
+        .new-user-box { background-color: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; text-align: left; display: flex; gap: 0.75rem; }
+        .new-user-icon { color: var(--brand-blue); flex-shrink: 0; margin-top: 0.25rem; }
+        .btn-wa { width: 100%; background-color: #25D366; color: white; border-radius: 0.375rem; padding: 1rem 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s; box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3); }
         .btn-wa:hover { background-color: #16a34a; }
-        .btn-wa svg { width: 1rem; height: 1rem; }
     </style>
-    
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '2189480848543217'); fbq('track', 'PageView'); 
-    </script>
 </head>
 <body>
 
@@ -148,8 +277,8 @@
         <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
             <div class="loader-ring animate-spin"></div>
         </div>
-        <p class="font-black uppercase tracking-widest text-center" style="font-size: 0.75rem; color: #1e293b; margin-bottom: 0.25rem;">Mengamankan Sesi</p>
-        <p class="font-bold uppercase tracking-widest text-center animate-pulse" style="font-size: 0.625rem; color: #94a3b8;">Loading Data...</p>
+        <p class="font-black uppercase tracking-widest text-center" style="font-size: 0.75rem; color: var(--slate-800); margin-bottom: 0.25rem;">Mengamankan Sesi</p>
+        <p class="font-bold uppercase tracking-widest text-center animate-pulse" style="font-size: 0.625rem; color: var(--slate-500);">Loading Data...</p>
     </div>
 
     <div id="processing-overlay" class="overlay dark hidden">
@@ -158,11 +287,9 @@
     </div>
 
     <main class="container">
-        
         <div id="main-card" class="main-card hidden fade-in-up">
-            
             <div class="card-header">
-                <h1 style="font-size: 1.125rem; font-weight: 700; letter-spacing: 0.025em;" id="head-title">Checkout</h1>
+                <h1 style="font-size: 1.125rem; font-weight: 800; letter-spacing: 0.05em;" id="head-title">Checkout</h1>
             </div>
 
             <div class="card-body">
@@ -195,7 +322,7 @@
                     <input type="hidden" id="prod-id"><input type="hidden" id="prod-title"><input type="hidden" id="prod-price">
                     
                     <div class="box">
-                        <h2 style="font-size: 0.875rem; font-weight: 900; color: #1e293b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Data Pembeli</h2>
+                        <h2 style="font-size: 0.875rem; font-weight: 800; color: var(--slate-800); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Data Pemesan</h2>
                         <div class="form-group">
                             <input type="text" id="cust-name" class="form-input" placeholder="Nama Lengkap" required>
                         </div>
@@ -204,7 +331,7 @@
                         </div>
                         <div class="form-group">
                             <span class="wa-prefix">+62</span>
-                            <input type="number" id="cust-wa" class="form-input input-wa" placeholder="Nomor WhatsApp" required>
+                            <input type="tel" id="cust-wa" class="form-input input-wa" placeholder="Nomor WhatsApp" required onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                         </div>
                     </div>
 
@@ -216,7 +343,7 @@
                                 </div>
                                 <div>
                                     <h4 id="bump-title-display" class="bump-title">...</h4>
-                                    <p id="bump-desc-display" class="bump-desc">...</p>
+                                    <p id="bump-desc-display" class="bump-desc">...<br><span style="font-size: 0.65rem; color: var(--brand-orange); font-weight: 700;">*Beri centang jika berminat</span></p>
                                     <span class="bump-price-badge">+ Rp <span id="bump-price-display">0</span></span>
                                 </div>
                             </div>
@@ -224,29 +351,60 @@
                     </div>
 
                     <div id="payment-method-container" class="hidden" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 0.875rem; font-weight: 900; color: #1e293b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Metode Pembayaran</h2>
+                        <h2 style="font-size: 0.875rem; font-weight: 800; color: var(--slate-800); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Metode Pembayaran</h2>
                         <div id="dynamic-payment-methods"></div>
                     </div>
 
-                    <button type="submit" id="btn-submit" class="btn-submit">
-                        Lanjutkan Pembayaran
-                    </button>
+                    <button type="submit" id="btn-submit" class="btn-submit">Lanjutkan Pembayaran</button>
                     
-                    <div id="affiliate-badge" class="hidden" style="margin-top: 1.5rem; text-align: center; font-size: 0.5625rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">
-                        Ref: <span id="affiliate-id-display" style="color: #10b981;">...</span>
+                    <div id="affiliate-badge" class="hidden" style="margin-top: 1.5rem; text-align: center; font-size: 0.5625rem; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.1em;">
+                        Ref: <span id="affiliate-id-display" style="color: var(--brand-blue);">...</span>
                     </div>
                 </form>
             </div>
         </div>
 
         <div id="success-state" class="success-card hidden fade-in-up">
+            <div class="success-icon"><i data-lucide="check-circle"></i></div>
             <h2 id="success-title" class="success-title">Akses Terbuka!</h2>
             <p id="success-desc" class="success-desc">Pesanan Anda berhasil diproses.</p>
             
+            <div id="manual-transfer-info" class="hidden" style="margin-bottom: 1.5rem; text-align: left; background-color: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 0.5rem; padding: 1.25rem;">
+                <p style="font-size: 0.75rem; font-weight: 800; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; text-align: center;">Info Pembayaran:</p>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--slate-300);">
+                    <span style="font-size: 0.875rem; color: var(--slate-600);">Bank</span>
+                    <strong id="succ-bank-name" style="font-size: 0.875rem; color: var(--slate-900);">...</strong>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--slate-300);">
+                    <span style="font-size: 0.875rem; color: var(--slate-600);" id="succ-rek-label">No. Rekening</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;" id="succ-norek-container">
+                        <strong id="succ-bank-norek" style="font-size: 1.125rem; font-family: monospace; color: var(--brand-blue);">...</strong>
+                        <button type="button" id="btn-copy-rek" onclick="copyToClipboard('succ-bank-norek')" style="padding: 0.375rem; color: var(--slate-500); background: var(--slate-200); border-radius: 0.25rem; cursor: pointer;"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>
+                    </div>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--slate-300);">
+                    <span style="font-size: 0.875rem; color: var(--slate-600);">Atas Nama</span>
+                    <strong id="succ-bank-owner" style="font-size: 0.875rem; color: var(--slate-900);">...</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size: 0.875rem; color: var(--slate-600);">Total Tagihan</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <strong id="succ-tagihan" style="font-size: 1.125rem; font-weight: 800; color: var(--rose-600);">...</strong>
+                        <button type="button" id="btn-copy-nominal" onclick="copyToClipboard('succ-tagihan', true)" style="padding: 0.375rem; color: var(--slate-500); background: var(--slate-200); border-radius: 0.25rem; cursor: pointer;"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>
+                    </div>
+                </div>
+                <p id="succ-note-manual" class="hidden" style="font-size: 0.7rem; color: var(--rose-500); text-align: center; margin-top: 1rem; font-weight: 700;">* Transfer TEPAT hingga 3 digit terakhir agar otomatis terverifikasi.</p>
+            </div>
+
             <div id="new-user-info" class="new-user-box hidden">
+                <div class="new-user-icon"><i data-lucide="info"></i></div>
                 <div>
-                    <p style="font-size: 0.625rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Akun Member Dibuat</p>
-                    <p style="font-size: 0.875rem; color: #1e293b; font-weight: 500;">Password Login: <span id="temp-pass" style="font-family: monospace; font-weight: 900; color: #10b981; background-color: #ecfdf5; padding: 0.125rem 0.5rem; border-radius: 0.25rem; margin-left: 0.25rem; border: 1px solid #d1fae5;"></span></p>
+                    <p style="font-size: 0.625rem; font-weight: 800; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Akun Member Dibuat</p>
+                    <p style="font-size: 0.875rem; color: var(--slate-800); font-weight: 500;">Password Login: <span id="temp-pass" style="font-family: monospace; font-weight: 800; color: var(--brand-blue); background-color: var(--brand-blue-light); padding: 0.125rem 0.5rem; border-radius: 0.25rem; border: 1px solid #b3e5fc;"></span></p>
                 </div>
             </div>
             
@@ -257,21 +415,35 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js" defer></script>
     
     <script>
+        // MENDUKUNG ANTREAN META PIXEL
+        window._pixelQueue = window._pixelQueue || [];
+        function firePixel(eventName, params) {
+            const eventID = params && params.event_id ? params.event_id : null;
+            const cleanParams = Object.assign({}, params || {});
+            if (eventID) delete cleanParams.event_id;
+            if (typeof fbq === 'function') {
+                if (eventID) fbq('track', eventName, cleanParams, { eventID });
+                else fbq('track', eventName, cleanParams);
+            } else {
+                window._pixelQueue.push({ eventName, params: cleanParams, eventID });
+            }
+        }
+
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const ref = urlParams.get('ref');
             if(ref) { localStorage.setItem('melimpah_affiliate', ref); }
         })();
 
-        // Fungsi Tembus Icon (Aman dari Icon Nyangkut)
         function tryCreateIcons() {
             if (typeof lucide !== 'undefined' && lucide.createIcons) {
                 lucide.createIcons();
-                
-                // Tambahkan icon yg hilang sementara saat render instan
-                document.getElementById('head-title').innerHTML = '<i data-lucide="shopping-cart" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Checkout';
-                document.querySelector('.btn-back').innerHTML = '<i data-lucide="arrow-left" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Batal / Kembali';
-                document.querySelector('.btn-submit').innerHTML = '<i data-lucide="lock" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Lanjutkan Pembayaran';
+                const titleEl = document.getElementById('head-title');
+                if(titleEl && !titleEl.innerHTML.includes('lucide')) titleEl.innerHTML = '<i data-lucide="shopping-cart" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Checkout';
+                const backBtn = document.querySelector('.btn-back');
+                if(backBtn && !backBtn.innerHTML.includes('lucide')) backBtn.innerHTML = '<i data-lucide="arrow-left" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Batal / Kembali';
+                const subBtn = document.querySelector('.btn-submit');
+                if(subBtn && !subBtn.innerHTML.includes('lucide')) subBtn.innerHTML = '<i data-lucide="lock" style="display:inline-block; vertical-align:middle; margin-right:5px;"></i> Lanjutkan Pembayaran';
                 lucide.createIcons();
             } else { setTimeout(tryCreateIcons, 50); }
         }
@@ -279,44 +451,108 @@
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `toast ${type}`;
             toast.innerHTML = `<span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
+            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 200); }, 3000);
+        }
+
+        function copyToClipboard(elementId, isNumber = false) {
+            let textToCopy = isNumber ? document.getElementById(elementId).getAttribute('data-val') : document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => showToast('Berhasil disalin!', 'success')).catch(() => showToast('Gagal menyalin', 'error'));
+        }
+
+        function getGatewayMerchantName(gateway) {
+            const key = `${String(gateway || '').toLowerCase()}_merchant_name`;
+            return String(sysPayment[key] || sysPayment.site_name || sysPayment.mail_sender_name || "Merchant").trim();
+        }
+
+        function normalizeAutoOwnerLabel(gateway, responseData = {}) {
+            const ownerEl = document.getElementById('succ-bank-owner');
+            if (!ownerEl) return;
+            const currentText = String(ownerEl.innerText || "").trim().toLowerCase();
+            if (currentText === "sistem otomatis" || currentText === "" || currentText === "-") {
+                ownerEl.innerText = responseData.bank_owner || getGatewayMerchantName(gateway);
+            }
         }
 
         let sysPayment = {};
         const urlParams = new URLSearchParams(window.location.search);
         const productId = (urlParams.get('id') || '').toUpperCase();
 
-        let basePrice = 0; let activeBumpPrice = 0; let isBumpAvailable = false; let appliedCouponCode = ""; let discountAmount = 0;
+        let basePrice = 0; let activeBumpPrice = 0; let activeBumpTitle = ""; let isBumpAvailable = false; let appliedCouponCode = ""; let discountAmount = 0;
 
+        // DI SINI QRIS, RETAIL, BJB DIHILANGKAN SERTA LOGO BCA DIPASTIKAN
         const paymentChannels = {
-            duitku: [{ category: 'Virtual Account', channels: [{ id: 'pay-bni-va', value: 'I1', logo: 'https://ik.imagekit.io/maihfdgfn5/bni-logo.svg', name: 'BNI' }, { id: 'pay-bri-va', value: 'BR', logo: 'https://ik.imagekit.io/maihfdgfn5/bri-logo.svg', name: 'BRIVA' }, { id: 'pay-bsi-va', value: 'BV', logo: 'https://ik.imagekit.io/maihfdgfn5/BSI.webp', name: 'BSI' }, { id: 'pay-cimb-va', value: 'B1', logo: 'https://ik.imagekit.io/maihfdgfn5/B1.png', name: 'CIMB NIAGA' }, { id: 'pay-mandiri-va', value: 'M2', logo: 'https://ik.imagekit.io/maihfdgfn5/mandiri-logo.svg', name: 'MANDIRI' }, { id: 'pay-maybank-va', value: 'VA', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Maybank_logo.svg', name: 'MAYBANK' }, { id: 'pay-permata-va', value: 'BT', logo: 'https://ik.imagekit.io/maihfdgfn5/permata-logo.svg', name: 'PERMATA BANK' }] }, { category: 'E-Wallet', channels: [{ id: 'pay-ovo', value: 'OV', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'pay-shopeepay', value: 'SA', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'SHOPEEPAY' }] }, { category: 'QRIS', channels: [{ id: 'pay-qris-spay', value: 'SP', logo: 'https://ik.imagekit.io/maihfdgfn5/QR.png', name: 'SHOPEEPAY QRIS' }] }, { category: 'Retail', channels: [{ id: 'pay-alfamart', value: 'FT', logo: 'https://ik.imagekit.io/maihfdgfn5/RETAIL.png', name: 'RETAIL' }] }],
-            tripay: [{ category: 'Virtual Account', channels: [{ id: 'tripay-bca', value: 'BCAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg', name: 'BCA VA' }, { id: 'tripay-bni', value: 'BNIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/bni-logo.svg', name: 'BNI VA' }, { id: 'tripay-bri', value: 'BRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/bri-logo.svg', name: 'BRI VA' }, { id: 'tripay-mandiri', value: 'MANDIRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/mandiri-logo.svg', name: 'Mandiri VA' }, { id: 'tripay-permata', value: 'PERMATAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/permata-logo.svg', name: 'Permata VA' }, { id: 'tripay-bsi', value: 'BSIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/BSI.webp', name: 'BSI VA' }] }, { category: 'E-Wallet & QRIS', channels: [{ id: 'tripay-qris', value: 'QRIS', logo: 'https://ik.imagekit.io/maihfdgfn5/QR.png', name: 'QRIS' }, { id: 'tripay-ovo', value: 'OVO', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'tripay-shopeepay', value: 'SHOPEEPAY', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'ShopeePay' }] }, { category: 'Minimarket', channels: [{ id: 'tripay-alfamart', value: 'ALFAMART', logo: 'https://ik.imagekit.io/maihfdgfn5/RETAIL.png', name: 'Alfamart' }, { id: 'tripay-indomaret', value: 'INDOMARET', logo: 'https://ik.imagekit.io/maihfdgfn5/RETAIL.png', name: 'Indomaret' }] }],
+            duitku: [
+                { category: 'Virtual Account', channels: [{ id: 'pay-bni-va', value: 'I1', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI' }, { id: 'pay-bri-va', value: 'BR', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRIVA' }, { id: 'pay-bsi-va', value: 'BV', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI' }, { id: 'pay-cimb-va', value: 'B1', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20cimb.png', name: 'CIMB NIAGA' }, { id: 'pay-mandiri-va', value: 'M2', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'MANDIRI' }, { id: 'pay-maybank-va', value: 'VA', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Maybank_logo.svg', name: 'MAYBANK' }, { id: 'pay-permata-va', value: 'BT', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'PERMATA BANK' }] }, 
+                { category: 'E-Wallet', channels: [{ id: 'pay-ovo', value: 'OV', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'pay-shopeepay', value: 'SA', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'SHOPEEPAY' }] }
+            ],
+            tripay: [
+                { category: 'Virtual Account', channels: [{ id: 'tripay-bca', value: 'BCAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg', name: 'BCA VA' }, { id: 'tripay-bni', value: 'BNIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI VA' }, { id: 'tripay-bri', value: 'BRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRI VA' }, { id: 'tripay-mandiri', value: 'MANDIRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'Mandiri VA' }, { id: 'tripay-permata', value: 'PERMATAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'Permata VA' }, { id: 'tripay-bsi', value: 'BSIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI VA' }] }, 
+                { category: 'E-Wallet', channels: [{ id: 'tripay-ovo', value: 'OVO', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'tripay-shopeepay', value: 'SHOPEEPAY', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'ShopeePay' }] }
+            ],
             xendit: [
-                { category: 'Virtual Account', channels: [{ id: 'xen-bni', value: 'BNI', logo: 'https://ik.imagekit.io/maihfdgfn5/bni-logo.svg', name: 'BNI' }, { id: 'xen-bri', value: 'BRI', logo: 'https://ik.imagekit.io/maihfdgfn5/bri-logo.svg', name: 'BRI' }, { id: 'xen-bsi', value: 'BSI', logo: 'https://ik.imagekit.io/maihfdgfn5/BSI.webp', name: 'BSI' }, { id: 'xen-cimb', value: 'CIMB', logo: 'https://ik.imagekit.io/maihfdgfn5/B1.png', name: 'CIMB' }, { id: 'xen-mandiri', value: 'MANDIRI', logo: 'https://ik.imagekit.io/maihfdgfn5/mandiri-logo.svg', name: 'MANDIRI' }, { id: 'xen-permata', value: 'PERMATA', logo: 'https://ik.imagekit.io/maihfdgfn5/permata-logo.svg', name: 'PERMATA' }, { id: 'xen-bjb', value: 'BJB', logo: 'https://ik.imagekit.io/vwxppst46/bjb-logo.svg', name: 'BJB' }]},
-                { category: 'QRIS', channels: [{ id: 'xen-qris', value: 'QRIS', logo: 'https://ik.imagekit.io/vwxppst46/qris-logo.svg', name: 'QRIS' }]},
-                { category: 'E-Wallet', channels: [{ id: 'xen-astrapay', value: 'ASTRAPAY', logo: 'https://ik.imagekit.io/vwxppst46/astrapay-logo.svg', name: 'ASTRA PAY' }]},
-                { category: 'Retail', channels: [{ id: 'xen-indomaret', value: 'INDOMARET', logo: 'https://ik.imagekit.io/maihfdgfn5/RETAIL.png', name: 'INDOMARET' }]},
-                { category: 'Paylater', channels: [{ id: 'xen-akulaku', value: 'AKULAKU', logo: 'https://ik.imagekit.io/vwxppst46/akulaku-logo.svg', name: 'AKULAKU' }]}
+                { category: 'Virtual Account', channels: [{ id: 'xen-bni', value: 'BNI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI' }, { id: 'xen-bri', value: 'BRI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRI' }, { id: 'xen-bsi', value: 'BSI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI' }, { id: 'xen-cimb', value: 'CIMB', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20cimb.png', name: 'CIMB' }, { id: 'xen-mandiri', value: 'MANDIRI', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'MANDIRI' }, { id: 'xen-permata', value: 'PERMATA', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'PERMATA' }]}
             ]
         };
 
+        paymentChannels.duitku = [
+            { category: 'Virtual Account', channels: [{ id: 'pay-bca-va', value: 'BC', logo: 'https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg', name: 'BCA VA' }, { id: 'pay-bni-va', value: 'I1', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI VA' }, { id: 'pay-bri-va', value: 'BR', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRI VA' }, { id: 'pay-bsi-va', value: 'BV', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI VA' }, { id: 'pay-cimb-va', value: 'B1', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20cimb.png', name: 'CIMB Niaga VA' }, { id: 'pay-mandiri-va', value: 'M2', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'Mandiri VA' }, { id: 'pay-maybank-va', value: 'VA', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Maybank_logo.svg', name: 'Maybank VA' }, { id: 'pay-permata-va', value: 'BT', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'Permata VA' }] },
+            { category: 'QRIS', channels: [{ id: 'pay-qris', value: 'SP', logo: 'https://ik.imagekit.io/maihfdgfn5/qris.png', name: 'QRIS' }] },
+            { category: 'E-Wallet', channels: [{ id: 'pay-ovo', value: 'OV', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'pay-dana', value: 'DA', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg', name: 'DANA' }, { id: 'pay-shopeepay', value: 'SA', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'ShopeePay' }] },
+            { category: 'Retail', channels: [{ id: 'pay-alfamart', value: 'FT', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9e/ALFAMART_LOGO_BARU.png', name: 'Alfamart' }, { id: 'pay-indomaret', value: 'IR', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indomaret.png', name: 'Indomaret' }] }
+        ];
+        paymentChannels.tripay = [
+            { category: 'Virtual Account', channels: [{ id: 'tripay-bca', value: 'BCAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg', name: 'BCA VA' }, { id: 'tripay-bni', value: 'BNIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI VA' }, { id: 'tripay-bri', value: 'BRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRI VA' }, { id: 'tripay-mandiri', value: 'MANDIRIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'Mandiri VA' }, { id: 'tripay-permata', value: 'PERMATAVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'Permata VA' }, { id: 'tripay-bsi', value: 'BSIVA', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI VA' }] },
+            { category: 'QRIS', channels: [{ id: 'tripay-qris', value: 'QRIS', logo: 'https://ik.imagekit.io/maihfdgfn5/qris.png', name: 'QRIS' }, { id: 'tripay-qris-c', value: 'QRISC', logo: 'https://ik.imagekit.io/maihfdgfn5/qris.png', name: 'QRIS Customer Fee' }] },
+            { category: 'E-Wallet', channels: [{ id: 'tripay-ovo', value: 'OVO', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'tripay-dana', value: 'DANA', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg', name: 'DANA' }, { id: 'tripay-shopeepay', value: 'SHOPEEPAY', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'ShopeePay' }] },
+            { category: 'Retail', channels: [{ id: 'tripay-alfamart', value: 'ALFAMART', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9e/ALFAMART_LOGO_BARU.png', name: 'Alfamart' }, { id: 'tripay-indomaret', value: 'INDOMARET', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indomaret.png', name: 'Indomaret' }] }
+        ];
+        paymentChannels.xendit = [
+            { category: 'Virtual Account', channels: [{ id: 'xen-bca', value: 'BCA', logo: 'https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg', name: 'BCA VA' }, { id: 'xen-bni', value: 'BNI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobni.png', name: 'BNI VA' }, { id: 'xen-bri', value: 'BRI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobri.png', name: 'BRI VA' }, { id: 'xen-bsi', value: 'BSI', logo: 'https://ik.imagekit.io/maihfdgfn5/logobsi.png', name: 'BSI VA' }, { id: 'xen-cimb', value: 'CIMB', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20cimb.png', name: 'CIMB VA' }, { id: 'xen-mandiri', value: 'MANDIRI', logo: 'https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp', name: 'Mandiri VA' }, { id: 'xen-permata', value: 'PERMATA', logo: 'https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png', name: 'Permata VA' }]},
+            { category: 'QRIS', channels: [{ id: 'xen-qris', value: 'QRIS', logo: 'https://ik.imagekit.io/maihfdgfn5/qris.png', name: 'QRIS' }] },
+            { category: 'E-Wallet', channels: [{ id: 'xen-ovo', value: 'OVO', logo: 'https://ik.imagekit.io/maihfdgfn5/ovo-logo.svg', name: 'OVO' }, { id: 'xen-dana', value: 'DANA', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg', name: 'DANA' }, { id: 'xen-shopeepay', value: 'SHOPEEPAY', logo: 'https://ik.imagekit.io/maihfdgfn5/SHOPEEPAY.png', name: 'ShopeePay' }] },
+            { category: 'Retail', channels: [{ id: 'xen-alfamart', value: 'ALFAMART', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9e/ALFAMART_LOGO_BARU.png', name: 'Alfamart' }, { id: 'xen-indomaret', value: 'INDOMARET', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indomaret.png', name: 'Indomaret' }] }
+        ];
+
+        function getEnabledChannels(gateway) {
+            const saved = String(sysPayment[`${gateway}_enabled_channels`] || '').trim();
+            if (!saved) return null;
+            if (saved === '__none__') return [];
+            return saved.split(',').map(item => item.trim()).filter(Boolean);
+        }
+
+        // HELPER UTK MENDETEKSI LOGO BANK SECARA DINAMIS BERDASARKAN INPUT ADMIN
+        function getManualBankLogoHtml(bankName, defaultIcon) {
+            if (!bankName) return `<i data-lucide="${defaultIcon}" style="width:2.5rem;height:2.5rem;"></i>`;
+            
+            const name = bankName.toLowerCase().trim();
+            if (name.includes('bca')) return `<img src="https://ik.imagekit.io/maihfdgfn5/Bank_Central_Asia.svg" alt="BCA">`;
+            if (name.includes('bni')) return `<img src="https://ik.imagekit.io/maihfdgfn5/logobni.png" alt="BNI">`;
+            if (name.includes('bri')) return `<img src="https://ik.imagekit.io/maihfdgfn5/logobri.png" alt="BRI">`;
+            if (name.includes('mandiri')) return `<img src="https://ik.imagekit.io/maihfdgfn5/mandirilogo.webp" alt="Mandiri">`;
+            if (name.includes('bsi')) return `<img src="https://ik.imagekit.io/maihfdgfn5/logobsi.png" alt="BSI">`;
+            if (name.includes('cimb')) return `<img src="https://ik.imagekit.io/maihfdgfn5/logo%20cimb.png" alt="CIMB">`;
+            if (name.includes('permata')) return `<img src="https://ik.imagekit.io/maihfdgfn5/logo%20PERMATA.png" alt="Permata">`;
+            if (name.includes('btn')) return `<img src="https://ik.imagekit.io/ojfkojb5l/BTN_2024.svg_DuhLWeYuW.png" alt="BTN">`;
+            
+            // Jika nama bank custom/tidak dikenal, tampilkan icon default bawaan sistem
+            return `<i data-lucide="${defaultIcon}" style="width:2.5rem;height:2.5rem;"></i>`;
+        }
+
         function applyPaymentMethods() {
-            const container = document.getElementById('dynamic-payment-methods');
-            container.innerHTML = ''; 
-
+            const container = document.getElementById('dynamic-payment-methods'); container.innerHTML = ''; 
             if (!sysPayment) return;
-
             let autoGateway = String(sysPayment.auto_gateway || 'duitku').trim().toLowerCase();
             let manualActive = String(sysPayment.is_manual_active).trim().toLowerCase() === 'true';
-
             let html = ''; let isFirstRendered = false; 
 
             if (autoGateway !== 'none' && paymentChannels[autoGateway]) {
+                const enabledChannels = getEnabledChannels(autoGateway);
                 paymentChannels[autoGateway].forEach(cat => {
+                    const visibleChannels = enabledChannels ? cat.channels.filter(ch => enabledChannels.includes(ch.value)) : cat.channels;
+                    if (visibleChannels.length === 0) return;
                     html += `<div class="cat-title">${cat.category}</div><div class="pay-grid">`;
-                    cat.channels.forEach(ch => {
+                    visibleChannels.forEach(ch => {
                         const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
                         html += `<div class="pay-card"><input type="radio" name="payment_method" id="${ch.id}" data-type="${autoGateway}" value="${ch.value}" ${isChecked}><label for="${ch.id}"><div class="check-icon">✓</div><div class="pay-logo"><img src="${ch.logo}" alt="${ch.name}" onerror="this.style.display='none'"></div><span class="pay-name">${ch.name}</span></label></div>`;
                     });
@@ -324,25 +560,43 @@
                 });
             }
 
+            // === RENDER METODE MANUAL (BANK 1, 2, 3 & QRIS) DENGAN LOGO DINAMIS ===
             if (manualActive) {
-                const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
-                html += `<div class="cat-title">Transfer Manual (Cek Admin)</div><div class="pay-grid"><div class="pay-card"><input type="radio" name="payment_method" id="pay-manual" data-type="manual" value="manual" ${isChecked}><label for="pay-manual"><div class="check-icon">✓</div><div class="pay-logo" style="color:#94a3b8;">🏦</div><span class="pay-name">Transfer ${sysPayment.bank_name || 'Bank'}</span></label></div></div>`;
-                html += `<div id="manual-info-box" style="display: ${isChecked ? 'block' : 'none'}; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; margin-bottom: 1rem;"><p style="font-size: 0.625rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Info Rekening Tujuan</p><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0;"><span style="font-size: 0.75rem; color: #475569; font-weight: 600;">Bank</span><strong style="font-size: 0.75rem; color: #1e293b;">${sysPayment.bank_name || '-'}</strong></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0;"><span style="font-size: 0.75rem; color: #475569; font-weight: 600;">No. Rekening</span><strong style="font-size: 1rem; font-family: monospace; color: #10b981; user-select: all;">${sysPayment.bank_norek || '-'}</strong></div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size: 0.75rem; color: #475569; font-weight: 600;">Atas Nama</span><strong style="font-size: 0.75rem; color: #1e293b;">${sysPayment.bank_owner || '-'}</strong></div></div>`;
+                html += `<div class="cat-title">Transfer dan Qris Manual (Cek Admin)</div><div class="pay-grid">`;
+                
+                // Bank 1 (Utama)
+                if (sysPayment.bank_name || sysPayment.bank_norek) {
+                    const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
+                    const logoHtml = getManualBankLogoHtml(sysPayment.bank_name, 'building-2');
+                    html += `<div class="pay-card"><input type="radio" name="payment_method" id="pay-manual-1" data-type="manual" value="bank1" ${isChecked}><label for="pay-manual-1"><div class="check-icon">✓</div><div class="pay-logo">${logoHtml}</div><span class="pay-name">Transfer ${sysPayment.bank_name || 'Bank'}</span></label></div>`;
+                }
+                
+                // Bank 2 (Opsional)
+                if (sysPayment.bank_name_2 || sysPayment.bank_norek_2) {
+                    const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
+                    const logoHtml = getManualBankLogoHtml(sysPayment.bank_name_2, 'landmark');
+                    html += `<div class="pay-card"><input type="radio" name="payment_method" id="pay-manual-2" data-type="manual" value="bank2" ${isChecked}><label for="pay-manual-2"><div class="check-icon">✓</div><div class="pay-logo">${logoHtml}</div><span class="pay-name">Transfer ${sysPayment.bank_name_2}</span></label></div>`;
+                }
+                
+                // Bank 3 (Opsional)
+                if (sysPayment.bank_name_3 || sysPayment.bank_norek_3) {
+                    const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
+                    const logoHtml = getManualBankLogoHtml(sysPayment.bank_name_3, 'piggy-bank');
+                    html += `<div class="pay-card"><input type="radio" name="payment_method" id="pay-manual-3" data-type="manual" value="bank3" ${isChecked}><label for="pay-manual-3"><div class="check-icon">✓</div><div class="pay-logo">${logoHtml}</div><span class="pay-name">Transfer ${sysPayment.bank_name_3}</span></label></div>`;
+                }
+                
+                // QRIS Manual (Opsional)
+                if (sysPayment.qris_image_url) {
+                    const isChecked = !isFirstRendered ? 'checked' : ''; if(!isFirstRendered) isFirstRendered = true;
+                    html += `<div class="pay-card"><input type="radio" name="payment_method" id="pay-manual-qris" data-type="manual" value="qris" ${isChecked}><label for="pay-manual-qris"><div class="check-icon">✓</div><div class="pay-logo"><img src="https://ik.imagekit.io/maihfdgfn5/qris.png" alt="QRIS Manual" onerror="this.style.display='none'"></div><span class="pay-name">QRIS Manual</span></label></div>`;
+                }
+
+                html += `</div>`;
             }
 
-            if(html === '') { html = `<div style="text-align: center; padding: 2rem; background: white; border: 1px dashed #cbd5e1; border-radius: 1rem;"><p style="font-size: 0.875rem; color: #ef4444; font-weight: 700;">Admin belum mengaktifkan metode pembayaran.</p></div>`; }
+            if(html === '') { html = `<div style="text-align: center; padding: 2rem; background: white; border: 1px dashed var(--slate-300); border-radius: 0.5rem;"><p style="font-size: 0.875rem; color: var(--rose-500); font-weight: 700;">Admin belum mengaktifkan metode pembayaran.</p></div>`; }
             container.innerHTML = html;
-            
-            setTimeout(() => {
-                const radios = document.querySelectorAll('input[name="payment_method"]');
-                const manualBox = document.getElementById('manual-info-box');
-                radios.forEach(r => {
-                    r.addEventListener('change', (e) => {
-                        if(manualBox) { manualBox.style.display = (e.target.getAttribute('data-type') === 'manual') ? 'block' : 'none'; }
-                    });
-                });
-                tryCreateIcons();
-            }, 50);
+            setTimeout(() => { tryCreateIcons(); }, 50);
         }
 
         async function applyCoupon() {
@@ -363,25 +617,41 @@
                 if(r.status === 'success') {
                     appliedCouponCode = r.code; discountAmount = r.discount;
                     msgEl.innerText = `${r.message} (-Rp ${discountAmount.toLocaleString('id-ID')})`; 
-                    msgEl.style.color = '#10b981'; 
+                    msgEl.style.color = 'var(--brand-blue)'; 
                     document.getElementById('coupon-code').disabled = true; btn.innerHTML = '✓'; calculateTotalDisplay();
                 } else {
                     appliedCouponCode = ""; discountAmount = 0; msgEl.innerText = r.message; 
-                    msgEl.style.color = '#ef4444'; 
+                    msgEl.style.color = 'var(--rose-500)'; 
                     btn.innerHTML = 'Pakai'; btn.disabled = false; calculateTotalDisplay();
                 }
-            } catch(e) { msgEl.innerText = 'Gagal cek kupon'; msgEl.classList.remove('hidden'); msgEl.style.color = '#ef4444'; btn.innerHTML = 'Pakai'; btn.disabled = false; }
+            } catch(e) { msgEl.innerText = 'Gagal cek kupon'; msgEl.classList.remove('hidden'); msgEl.style.color = 'var(--rose-500)'; btn.innerHTML = 'Pakai'; btn.disabled = false; calculateTotalDisplay(); }
         }
 
         function calculateTotalDisplay() {
             const checkbox = document.getElementById('bump-checkbox'); const box = document.getElementById('bump-box');
             let currentTotal = basePrice - discountAmount; if(currentTotal < 0) currentTotal = 0; 
-            if (isBumpAvailable && checkbox.checked) { currentTotal += activeBumpPrice; box.classList.add('bump-checked'); } else { box.classList.remove('bump-checked'); }
             
+            let extraBumpPrice = 0;
+            if (isBumpAvailable && checkbox.checked) { 
+                extraBumpPrice = activeBumpPrice;
+                currentTotal += activeBumpPrice; 
+                box.classList.add('bump-checked'); 
+            } else { 
+                box.classList.remove('bump-checked'); 
+            }
+            
+            let valCoret = 0;
             if (discountAmount > 0) {
-                const originalTotal = (basePrice + (isBumpAvailable && checkbox.checked ? activeBumpPrice : 0)).toLocaleString('id-ID');
-                document.getElementById('display-total-top').innerHTML = `<span style="font-size: 0.875rem; color: #94a3b8; text-decoration: line-through; margin-right: 0.5rem; font-weight: 400;">Rp ${originalTotal}</span>Rp ${currentTotal.toLocaleString('id-ID')}`;
-            } else { document.getElementById('display-total-top').innerText = 'Rp ' + currentTotal.toLocaleString('id-ID'); }
+                valCoret = basePrice + extraBumpPrice; 
+            } else if (window.hargaCoretDB && window.hargaCoretDB > basePrice) {
+                valCoret = window.hargaCoretDB + extraBumpPrice;
+            }
+
+            if (valCoret > currentTotal) {
+                document.getElementById('display-total-top').innerHTML = `<span style="font-size: 0.875rem; color: var(--slate-400); text-decoration: line-through; margin-right: 0.5rem; font-weight: 500;">Rp ${valCoret.toLocaleString('id-ID')}</span>Rp ${currentTotal.toLocaleString('id-ID')}`;
+            } else { 
+                document.getElementById('display-total-top').innerText = 'Rp ' + currentTotal.toLocaleString('id-ID'); 
+            }
 
             if (currentTotal > 0) { document.getElementById('payment-method-container').classList.remove('hidden'); } else { document.getElementById('payment-method-container').classList.add('hidden'); }
         }
@@ -390,21 +660,29 @@
 
         function showFormInstant(p) {
             document.getElementById('global-init-loader').style.display = 'none'; 
-
             document.getElementById('main-card').classList.remove('hidden');
             document.getElementById('coupon-section').classList.remove('hidden');
             document.getElementById('main-card').classList.add('show'); 
 
             document.getElementById('display-title').innerText = p.nama || p.title; 
-            document.getElementById('prod-id').value = p.id; document.getElementById('prod-title').value = p.nama || p.title; document.getElementById('prod-price').value = p.harga;
+            
+            document.getElementById('prod-id').value = p.id_produk || p.id || ''; 
+            document.getElementById('prod-title').value = p.nama || p.title || ''; 
+            document.getElementById('prod-price').value = p.harga || 0;
+            
             basePrice = Number(p.harga) || 0;
-
+            window.hargaCoretDB = Number(p.harga_coret) || 0;
             document.getElementById('display-img').src = p.gambar || 'https://ik.imagekit.io/maihfdgfn5/download.png';
             
+            // INJECT PIXEL: INITIATE CHECKOUT
+            if (typeof firePixel === 'function') {
+                firePixel('InitiateCheckout', { content_name: p.nama || p.title, value: basePrice, currency: 'IDR' });
+            }
+            
             if (p.bump_status === 'Active') {
-                isBumpAvailable = true; activeBumpPrice = Number(p.bump_price) || 0;
-                document.getElementById('bump-container').classList.remove('hidden'); document.getElementById('bump-title-display').innerText = p.bump_title || 'Penawaran Spesial'; document.getElementById('bump-desc-display').innerText = p.bump_desc || 'Ambil penawaran terbatas ini!'; document.getElementById('bump-price-display').innerText = activeBumpPrice.toLocaleString('id-ID');
-            } else { isBumpAvailable = false; activeBumpPrice = 0; document.getElementById('bump-checkbox').checked = false; document.getElementById('bump-container').classList.add('hidden'); }
+                isBumpAvailable = true; activeBumpPrice = Number(p.bump_price) || 0; activeBumpTitle = p.bump_title || 'Order Bump';
+                document.getElementById('bump-container').classList.remove('hidden'); document.getElementById('bump-title-display').innerText = p.bump_title || 'Penawaran Spesial'; document.getElementById('bump-desc-display').innerHTML = (p.bump_desc || 'Ambil penawaran terbatas ini!') + '<br><span style="font-size: 0.65rem; color: var(--brand-orange); font-weight: 700;">*Beri centang jika berminat</span>'; document.getElementById('bump-price-display').innerText = activeBumpPrice.toLocaleString('id-ID');
+            } else { isBumpAvailable = false; activeBumpPrice = 0; activeBumpTitle = ""; document.getElementById('bump-checkbox').checked = false; document.getElementById('bump-container').classList.add('hidden'); }
             calculateTotalDisplay(); tryCreateIcons();
         }
 
@@ -437,6 +715,150 @@
             } catch (e) { if(!isFormVisible) { document.getElementById('global-init-loader').style.display = 'none'; showToast('Koneksi Gagal!', 'error'); } }
         }
 
+        // ==============================================
+        // RADAR PEMANTAU STATUS PEMBAYARAN (KEBAL CORS)
+        // ==============================================
+        function pantauPembayaran(nomorInvoice, namaProduk, totalTagihan) {
+            console.log("🚀 Radar aktif untuk: " + nomorInvoice);
+            let cekHitungan = 0;
+            const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
+
+            const intervalPemantau = setInterval(() => {
+                cekHitungan++;
+                if (cekHitungan > 600) { clearInterval(intervalPemantau); return; } // Maksimal 30 menit
+
+                fetch(targetUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'check_payment_status', invoice: nomorInvoice })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("👀 Pantauan detik ke-" + (cekHitungan*3) + " :", data.payment_status);
+                    
+                    if (data.status === 'success' && (data.payment_status === 'Lunas' || data.payment_status === 'Success')) {
+                        clearInterval(intervalPemantau); 
+                        console.log("✅ LUNAS TERDETEKSI! Mengubah layar...");
+
+                        showPaidSuccess(nomorInvoice, namaProduk, totalTagihan, data.id_produk);
+                    }
+                }).catch(err => {
+                    console.log(" Radar terganggu sinyal: ", err.message);
+                });
+            }, 3000); 
+        }
+
+        function showPaidSuccess(nomorInvoice, namaProduk, totalTagihan, idProduk) {
+            document.getElementById('global-init-loader').style.display = 'none';
+            document.getElementById('processing-overlay').classList.add('hidden');
+            document.getElementById('processing-overlay').classList.remove('flex');
+            document.getElementById('main-card').classList.add('hidden');
+
+            const succ = document.getElementById('success-state');
+            document.getElementById('success-title').innerText = "Pembayaran Lunas! 🎉";
+            document.getElementById('success-title').style.color = "var(--brand-blue)";
+
+            const sIcon = document.querySelector('.success-icon');
+            sIcon.style.backgroundColor = "var(--brand-blue-light)";
+            sIcon.style.color = "var(--brand-blue)";
+            sIcon.innerHTML = '<i data-lucide="check-circle"></i>';
+
+            document.getElementById('success-desc').innerHTML = `Terima kasih, tagihan untuk <b>${namaProduk || 'pesanan Anda'}</b> telah berhasil dikonfirmasi otomatis.`;
+            document.getElementById('manual-transfer-info').classList.add('hidden');
+            document.getElementById('new-user-info').classList.add('hidden');
+
+            const waBtn = document.getElementById('wa-btn');
+            waBtn.href = "/member";
+            waBtn.target = "_self";
+            waBtn.innerHTML = '<i data-lucide="layout-dashboard" style="width:1rem;height:1rem;margin-right:0.5rem;display:inline-block;vertical-align:middle;"></i> Buka Dashboard Member';
+            waBtn.style.backgroundColor = "var(--brand-blue)";
+
+            succ.classList.remove('hidden');
+            setTimeout(() => succ.classList.add('show'), 50);
+            tryCreateIcons();
+
+            const eventID = nomorInvoice ? `purchase_${nomorInvoice}` : "";
+            const pixelKey = eventID ? `pixel_purchase_${eventID}` : "";
+            if (typeof firePixel === 'function' && (!pixelKey || sessionStorage.getItem(pixelKey) !== "sent")) {
+                firePixel('Purchase', {
+                    content_name: namaProduk || 'Pesanan Digital',
+                    content_ids: [String(idProduk || nomorInvoice || '')],
+                    value: Number(totalTagihan) || 0,
+                    currency: 'IDR',
+                    event_id: eventID
+                });
+                if (pixelKey) sessionStorage.setItem(pixelKey, "sent");
+            }
+        }
+
+        function showTripayReturnWaiting(nomorInvoice) {
+            document.getElementById('global-init-loader').style.display = 'none';
+            document.getElementById('main-card').classList.add('hidden');
+
+            const succ = document.getElementById('success-state');
+            document.getElementById('success-title').innerText = "Mengecek Pembayaran...";
+            document.getElementById('success-title').style.color = "var(--brand-orange)";
+
+            const sIcon = document.querySelector('.success-icon');
+            sIcon.style.backgroundColor = "var(--brand-orange-light)";
+            sIcon.style.color = "var(--brand-orange)";
+            sIcon.innerHTML = '<i data-lucide="loader" class="animate-spin"></i>';
+
+            document.getElementById('success-desc').innerHTML = `Kami sedang mencocokkan status pembayaran untuk invoice <b>#${nomorInvoice}</b>.`;
+            document.getElementById('manual-transfer-info').classList.add('hidden');
+            document.getElementById('new-user-info').classList.add('hidden');
+
+            const waBtn = document.getElementById('wa-btn');
+            waBtn.href = "/member";
+            waBtn.target = "_self";
+            waBtn.innerHTML = '<i data-lucide="layout-dashboard" style="width:1rem;height:1rem;margin-right:0.5rem;display:inline-block;vertical-align:middle;"></i> Buka Dashboard Member';
+            waBtn.style.backgroundColor = "var(--slate-500)";
+
+            succ.classList.remove('hidden');
+            setTimeout(() => succ.classList.add('show'), 50);
+            tryCreateIcons();
+        }
+
+        function handleTripayReturn() {
+            const statusParam = urlParams.get('status');
+            const nomorInvoice = (urlParams.get('invoice') || '').trim();
+            if (statusParam !== 'success' || !nomorInvoice) return false;
+
+            showTripayReturnWaiting(nomorInvoice);
+            const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
+            let cekHitungan = 0;
+
+            const cekStatus = () => {
+                cekHitungan++;
+                fetch(targetUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'check_payment_status', invoice: nomorInvoice })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && (data.payment_status === 'Lunas' || data.payment_status === 'Success')) {
+                        showPaidSuccess(nomorInvoice, data.nama_produk, data.harga_total, data.id_produk);
+                        return;
+                    }
+                    if (data.status === 'success' && data.payment_status === 'Cancelled') {
+                        document.getElementById('success-title').innerText = "Pesanan Dibatalkan";
+                        document.getElementById('success-title').style.color = "var(--rose-500)";
+                        document.getElementById('success-desc').innerText = "Invoice ini sudah tidak aktif. Silakan buat pesanan ulang jika masih ingin melanjutkan.";
+                        return;
+                    }
+                    if (cekHitungan < 120) setTimeout(cekStatus, 3000);
+                    else document.getElementById('success-desc').innerHTML = `Pembayaran belum terkonfirmasi otomatis. Jika sudah berhasil membayar, akses member akan aktif setelah callback Tripay masuk. Invoice: <b>#${nomorInvoice}</b>.`;
+                })
+                .catch(() => {
+                    if (cekHitungan < 120) setTimeout(cekStatus, 3000);
+                });
+            };
+
+            cekStatus();
+            return true;
+        }
+
         document.getElementById('form-checkout').onsubmit = async (e) => {
             e.preventDefault();
             const processingOverlay = document.getElementById('processing-overlay'); const processingText = document.getElementById('processing-text');
@@ -448,16 +870,43 @@
             
             const bumpChecked = isBumpAvailable ? document.getElementById('bump-checkbox').checked : false;
 
-            if(typeof fbq === 'function') {
-                let finalPriceVal = basePrice - discountAmount; if (finalPriceVal < 0) finalPriceVal = 0; if (bumpChecked) finalPriceVal += activeBumpPrice;
-                fbq('track', 'InitiateCheckout', { content_name: document.getElementById('prod-title').value, content_ids: [document.getElementById('prod-id').value], value: finalPriceVal, currency: 'IDR' });
-            }
+            let finalPriceVal = basePrice - discountAmount; 
+            if (finalPriceVal < 0) finalPriceVal = 0; 
+            if (bumpChecked) finalPriceVal += activeBumpPrice;
 
             const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+            if (finalPriceVal > 0 && !checkedRadio) {
+                clearInterval(textAnim);
+                processingOverlay.classList.add('hidden');
+                processingOverlay.classList.remove('flex');
+                showToast('Pilih metode pembayaran terlebih dahulu.', 'warning');
+                return;
+            }
             const paymentTypeSelected = checkedRadio ? checkedRadio.getAttribute('data-type') : 'duitku';
             const paymentChannelSelected = checkedRadio ? checkedRadio.value : '';
 
-            const pData = { action: 'create_order', nama: document.getElementById('cust-name').value, email: document.getElementById('cust-email').value, whatsapp: document.getElementById('cust-wa').value, id_produk: document.getElementById('prod-id').value, nama_produk: document.getElementById('prod-title').value, harga: document.getElementById('prod-price').value, take_bump: bumpChecked, kupon: appliedCouponCode, affiliate: localStorage.getItem('melimpah_affiliate') || "-", metode_pembayaran: paymentTypeSelected, payment_channel: paymentChannelSelected };
+            // 🔥 FIX: MENANGKAP NAMA METODE PEMBAYARAN ASLI YANG DIPILIH
+            let paymentChannelName = paymentTypeSelected.toUpperCase();
+            if (checkedRadio) {
+                const labelEl = document.querySelector(`label[for="${checkedRadio.id}"] .pay-name`);
+                if (labelEl) paymentChannelName = labelEl.innerText;
+            }
+
+            const pData = { 
+                action: 'create_order', 
+                nama: document.getElementById('cust-name').value, 
+                email: document.getElementById('cust-email').value, 
+                whatsapp: document.getElementById('cust-wa').value, 
+                id_produk: document.getElementById('prod-id').value, 
+                nama_produk: document.getElementById('prod-title').value, 
+                harga: finalPriceVal, 
+                take_bump: bumpChecked, 
+                bump_title: bumpChecked ? activeBumpTitle : "",
+                kupon: appliedCouponCode, 
+                affiliate: localStorage.getItem('melimpah_affiliate') || "-", 
+                metode_pembayaran: paymentTypeSelected, 
+                payment_channel: paymentChannelSelected 
+            };
 
             try {
                 const targetUrl = window.SCRIPT_URL || SCRIPT_URL;
@@ -466,28 +915,157 @@
 
                 if(r.status === 'success') {
                     clearInterval(textAnim);
-                    if(typeof fbq === 'function') { fbq('track', 'Purchase', { content_name: pData.nama_produk, content_ids: [pData.id_produk], value: r.tagihan, currency: 'IDR' }); }
-                    fetch('/api/payment-success', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pData.email, whatsapp: pData.whatsapp, harga: r.tagihan }) }).catch(err => console.log('CAPI fail'));
+                    const finalTagihan = r.tagihan !== undefined ? r.tagihan : finalPriceVal;
+                    if (r.tripay_redirect && r.payment_url) {
+                        showToast('Mengalihkan ke halaman pembayaran Tripay...', 'success');
+                        window.location.href = r.payment_url;
+                        return;
+                    }
+                    
+                    // JIKA GRATIS
+                    if (finalTagihan <= 0) {
+                        if (typeof firePixel === 'function') { firePixel('Purchase', { content_name: pData.nama_produk, content_ids: [pData.id_produk], value: finalTagihan, currency: 'IDR' }); }
 
-                    if(r.payment_url) {
-                        setTimeout(() => { window.location.href = r.payment_url; }, 800); 
-                    } else {
                         processingOverlay.classList.add('hidden'); processingOverlay.classList.remove('flex'); window.scrollTo({top: 0, behavior: 'smooth'}); 
                         document.getElementById('main-card').classList.remove('show');
                         setTimeout(() => {
                             document.getElementById('main-card').classList.add('hidden'); 
-                            const succ = document.getElementById('success-state'); succ.classList.remove('hidden'); setTimeout(() => succ.classList.add('show'), 50);
+                            const succ = document.getElementById('success-state'); 
+                            document.getElementById('success-title').innerText = "Akses Terbuka!";
+                            document.getElementById('success-title').style.color = "var(--brand-blue)";
+                            const sIcon = document.querySelector('.success-icon');
+                            sIcon.style.backgroundColor = "var(--brand-blue-light)"; sIcon.style.color = "var(--brand-blue)"; sIcon.innerHTML = '<i data-lucide="check-circle"></i>';
+                            document.getElementById('success-desc').innerText = "Pesanan Anda berhasil diproses secara gratis.";
+                            document.getElementById('manual-transfer-info').classList.add('hidden');
+                            const waBtn = document.getElementById('wa-btn');
+                            waBtn.href = "/member";
+                            waBtn.innerHTML = '<i data-lucide="layout-dashboard" style="width:1rem;height:1rem;margin-right:0.5rem;display:inline-block;vertical-align:middle;"></i> Buka Dashboard Member';
+                            if(r.is_new_user) { document.getElementById('new-user-info').classList.remove('hidden'); document.getElementById('temp-pass').innerText = r.password; }
+                            succ.classList.remove('hidden'); 
+                            setTimeout(() => succ.classList.add('show'), 50);
+                            tryCreateIcons();
                         }, 300);
+                        showToast('Pesanan berhasil diproses!', 'success'); 
+                    } 
+                    // JIKA BERBAYAR (MENDUKUNG SEMUA GATEWAY: TRIPAY, XENDIT, DUITKU, MANUAL)
+                    else {
+                        processingOverlay.classList.add('hidden'); processingOverlay.classList.remove('flex'); window.scrollTo({top: 0, behavior: 'smooth'}); 
+                        document.getElementById('main-card').classList.remove('show');
+                        
+                        setTimeout(() => {
+                            document.getElementById('main-card').classList.add('hidden'); 
+                            const succ = document.getElementById('success-state'); 
+                            
+                            document.getElementById('success-title').innerText = "Menunggu Pembayaran ⏳";
+                            document.getElementById('success-title').style.color = "var(--brand-orange)";
+                            const sIcon = document.querySelector('.success-icon');
+                            sIcon.style.backgroundColor = "var(--brand-orange-light)"; 
+                            sIcon.style.color = "var(--brand-orange)"; 
+                            sIcon.innerHTML = '<i data-lucide="clock"></i>';
+                            
+                            document.getElementById('success-desc').innerText = "Selesaikan pembayaran Anda menggunakan detail di bawah ini.";
+                            document.getElementById('manual-transfer-info').classList.remove('hidden');
+                            
+                            if (paymentTypeSelected === 'manual') {
+                                document.getElementById('succ-note-manual').classList.remove('hidden');
+                            } else {
+                                document.getElementById('succ-note-manual').classList.add('hidden');
+                            }
+                            
+                            // LOGIKA UNTUK XENDIT & DUITKU
+                            if (r.payment_url && r.payment_url !== "#" && r.payment_url !== "DIRECT") {
+                                document.getElementById('succ-rek-label').innerText = "Link Pembayaran";
+                                document.getElementById('succ-norek-container').innerHTML = `<a href="${r.payment_url}" target="_blank" style="background:var(--brand-blue); color:white; padding:8px 16px; border-radius:6px; font-weight:bold; text-decoration:none; font-size:14px; box-shadow: 0 4px 6px -1px rgba(0,170,231,0.2);">Klik Buka Halaman Bayar &rarr;</a>`;
+                                
+                                document.getElementById('succ-bank-name').innerText = paymentChannelName;
+                                document.getElementById('succ-bank-owner').innerText = r.bank_owner || getGatewayMerchantName(paymentTypeSelected);
+                            } 
+                            // LOGIKA UNTUK TRIPAY & MANUAL 
+                            else {
+                                let bName = r.payment_name || paymentChannelName || r.bank_name || sysPayment.bank_name || "Bank Lokal";
+                                let bNorek = r.pay_code || r.bank_norek || sysPayment.bank_norek || "-";
+                                let bOwner = r.bank_owner || sysPayment.tripay_merchant_name || sysPayment.bank_owner || "-";
+                                let qrUrl = r.qr_url || null;
 
-                        if(r.is_new_user) { document.getElementById('new-user-info').classList.remove('hidden'); document.getElementById('temp-pass').innerText = r.password; }
-                        showToast('Pesanan berhasil diproses!', 'success'); tryCreateIcons();
+                                // PENGUNCI LOGIKA MANUAL (BANK 1, 2, 3, ATAU QRIS)
+                                if (paymentTypeSelected === 'manual' || String(r.metode_pembayaran).toLowerCase() === 'manual') {
+                                    // Deteksi channel yang dipilih oleh user sebelum submit
+                                    const selectedChannel = checkedRadio ? checkedRadio.value : '';
+                                    
+                                    if (selectedChannel === 'bank2') {
+                                        bName = "Transfer " + (sysPayment.bank_name_2 || "Bank");
+                                        bNorek = sysPayment.bank_norek_2 || "-";
+                                        bOwner = sysPayment.bank_owner_2 || "-";
+                                        qrUrl = null;
+                                    } else if (selectedChannel === 'bank3') {
+                                        bName = "Transfer " + (sysPayment.bank_name_3 || "Bank");
+                                        bNorek = sysPayment.bank_norek_3 || "-";
+                                        bOwner = sysPayment.bank_owner_3 || "-";
+                                        qrUrl = null;
+                                    } else if (selectedChannel === 'qris') {
+                                        bName = "QRIS Manual";
+                                        bNorek = "-"; // Hilangkan nomor rekening agar tidak membingungkan
+                                        bOwner = sysPayment.qris_owner_name || "-";
+                                        qrUrl = sysPayment.qris_image_url || null; // Paksa ambil gambar QRIS dari panel admin
+                                    } else { 
+                                        // Default Bank 1 Utama
+                                        bName = "Transfer " + (sysPayment.bank_name || "Bank");
+                                        bNorek = sysPayment.bank_norek || "-";
+                                        bOwner = sysPayment.bank_owner || "-";
+                                        qrUrl = null;
+                                    }
+                                }
+                                
+                                // Tampilkan Nama Bank & Atas Nama
+                                document.getElementById('succ-bank-name').innerText = bName;
+                                document.getElementById('succ-bank-owner').innerText = bOwner;
+                                
+                                // Render Tampilan Utama (Barcode Gambar atau Teks Nomor Rekening)
+                                if (qrUrl && qrUrl !== "" && qrUrl !== "null" && qrUrl !== "undefined") {
+                                    document.getElementById('succ-rek-label').innerText = "Scan QR Code";
+                                    document.getElementById('succ-norek-container').innerHTML = `<img src="${qrUrl}" style="max-width: 180px; width: 100%; border-radius: 0.5rem; border: 1px solid var(--slate-200); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: block; margin: 0 auto;">`;
+                                } else {
+                                    document.getElementById('succ-rek-label').innerText = "No. Rekening / VA";
+                                    document.getElementById('succ-norek-container').innerHTML = `<strong id="succ-bank-norek" style="font-size: 1.125rem; font-family: monospace; color: var(--brand-blue);">${bNorek}</strong><button type="button" id="btn-copy-rek" onclick="copyToClipboard('succ-bank-norek')" style="padding: 0.375rem; color: var(--slate-500); background: var(--slate-200); border-radius: 0.25rem; cursor: pointer;"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>`;
+                                }
+                            }
+                            normalizeAutoOwnerLabel(paymentTypeSelected, r);
+                            
+                            const waBtn = document.getElementById('wa-btn');
+                            let adminWa = String(sysPayment.wa_admin || "").replace(/\D/g, ''); 
+                            if (adminWa.startsWith('0')) adminWa = '62' + adminWa.substring(1);
+                            else if (adminWa.startsWith('8')) adminWa = '62' + adminWa;
+                            
+                            let teksWA = paymentTypeSelected === 'manual' 
+                                ? `Halo Admin, saya sudah melakukan transfer untuk pesanan:\n\n*Invoice:* #${r.invoice}\n*Produk:* ${pData.nama_produk}\n*Nominal:* Rp ${finalTagihan.toLocaleString('id-ID')}\n\nBerikut saya lampirkan bukti transfernya.`
+                                : `Halo Admin, saya mengalami kendala pada saat membayar via *${paymentChannelName}* untuk Invoice #${r.invoice}. Mohon bantuannya.`;
+                                
+                            waBtn.href = `https://wa.me/${adminWa}?text=${encodeURIComponent(teksWA)}`;
+                            waBtn.innerHTML = paymentTypeSelected === 'manual' 
+                                ? '<i data-lucide="check-circle" style="width:1rem;height:1rem;margin-right:0.5rem;display:inline-block;vertical-align:middle;"></i> Konfirmasi Transfer'
+                                : '<i data-lucide="help-circle" style="width:1rem;height:1rem;margin-right:0.5rem;display:inline-block;vertical-align:middle;"></i> Bantuan Pembayaran';
+                            waBtn.style.backgroundColor = paymentTypeSelected === 'manual' ? "#25D366" : "#64748b";
+
+                            document.getElementById('succ-tagihan').innerText = "Rp " + finalTagihan.toLocaleString('id-ID');
+                            document.getElementById('succ-tagihan').setAttribute('data-val', finalTagihan);
+                            document.getElementById('btn-copy-nominal').style.display = 'block';
+                            
+                            if(r.is_new_user) { document.getElementById('new-user-info').classList.remove('hidden'); document.getElementById('temp-pass').innerText = r.password; }
+                            
+                            succ.classList.remove('hidden'); 
+                            setTimeout(() => succ.classList.add('show'), 50);
+                            tryCreateIcons();
+
+                            // 🚀 FIX: NYALAKAN RADAR UNTUK SEMUA GATEWAY TERMASUK MANUAL
+                            pantauPembayaran(r.invoice, pData.nama_produk, finalTagihan);
+
+                        }, 300);
+                        showToast('Pesanan berhasil dibuat!', 'success');
                     }
                 } else { clearInterval(textAnim); processingOverlay.classList.add('hidden'); processingOverlay.classList.remove('flex'); showToast(r.message, 'error'); }
             } catch (err) { clearInterval(textAnim); processingOverlay.classList.add('hidden'); processingOverlay.classList.remove('flex'); showToast('Gagal memproses pesanan.', 'error'); }
         };
-
-        // 🔥 LANGSUNG JALAN TANPA NUNGGU BROWSER 🔥
-        loadProduct();
+        if (!handleTripayReturn()) loadProduct();
         tryCreateIcons();
     </script>
 </body>
