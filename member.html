@@ -22,14 +22,105 @@
             }
 
             function applyGlobalSettings(data) {
+                // ==========================================
+                // FORMULA WARNA TEMA DINAMIS (THEME INJECTOR)
+                // ==========================================
+                if(data.theme_color) {
+                    let themeStyle = document.getElementById('dynamic-theme');
+                    if (!themeStyle) {
+                        themeStyle = document.createElement('style');
+                        themeStyle.id = 'dynamic-theme';
+                        document.head.appendChild(themeStyle);
+                    }
+                    
+                    themeStyle.innerHTML = `
+                        :root {
+                            --brand-blue: ${data.theme_color} !important;
+                        }
+                        
+                        /* Override Tombol & Background Utama */
+                        .auth-btn-primary, .badge-lunas, .btn-main.primary, .header-avatar { 
+                            background-color: ${data.theme_color} !important; 
+                            color: white !important; 
+                        }
+                        .auth-btn-primary:hover, .btn-main.primary:hover { opacity: 0.85 !important; }
+                        
+                        /* Override Teks & Link */
+                        .auth-title .highlight, .auth-toggle-link, .text-brand-blue { 
+                            color: ${data.theme_color} !important; 
+                        }
+                        
+                        /* Override Input Focus */
+                        .auth-input-field:focus, .modal-form-input:focus { 
+                            border-color: ${data.theme_color} !important; 
+                            box-shadow: 0 0 0 3px ${data.theme_color}33 !important; 
+                        }
+                        
+                        /* Override Menu Aktif Sidebar */
+                        .nav-item.active { 
+                            background: ${data.theme_color}15 !important; 
+                            color: ${data.theme_color} !important; 
+                            border-right: 3px solid ${data.theme_color} !important; 
+                        }
+                        
+                        /* Override Kotak Link Affiliate */
+                        .aff-link-box.theme-blue { border-left-color: ${data.theme_color} !important; }
+                        .aff-link-box.theme-blue .btn-copy { background-color: ${data.theme_color} !important; }
+                        .aff-link-box.theme-blue .btn-copy:hover { opacity: 0.85 !important; }
+                        .aff-link-box.theme-blue .aff-link-icon { 
+                            color: ${data.theme_color} !important; 
+                            background: ${data.theme_color}15 !important; 
+                        }
+                    `;
+                }
+                // ==========================================
+
                 if(data.site_name) { document.title = document.title.replace(/Melimpah Digital/gi, data.site_name).replace(/Melimpah/gi, data.site_name).replace(/Sistem Digital/gi, data.site_name).replace(/SheetFlare/gi, data.site_name); }
                 if(data.wa_admin) window.waAdminGlobal = data.wa_admin;
+
                 const updateDomElements = () => {
                     if(data.site_name) { document.querySelectorAll('.dyn-site-name').forEach(el => el.innerText = data.site_name); }
                     if(data.site_tagline) { document.querySelectorAll('.dyn-site-tagline').forEach(el => el.innerText = data.site_tagline); }
+                    
+                    if(data.site_logo) {
+                        const logoImg = document.getElementById('auth-logo');
+                        const logoText = document.getElementById('auth-logo-text');
+                        if(logoImg && logoText) {
+                            logoImg.src = data.site_logo;
+                            logoImg.classList.remove('hidden');
+                            logoText.classList.add('hidden');
+                        }
+                    }
                 };
+                
                 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', updateDomElements); } else { updateDomElements(); }
+
+                // ==========================================
+                // TRACKING & ANALYTICS INJECTOR
+                // ==========================================
+                
+                // 1. Inject Google Analytics
+                if(data.ga_id && !window.gaInjected) {
+                    let gaScript = document.createElement('script');
+                    gaScript.async = true;
+                    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + data.ga_id;
+                    document.head.appendChild(gaScript);
+                    
+                    let gaInline = document.createElement('script');
+                    gaInline.innerHTML = `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${data.ga_id}');`;
+                    document.head.appendChild(gaInline);
+                    window.gaInjected = true;
+                }
+                
+                // 2. Inject Meta Pixel
+                if(data.meta_pixel_id && !window.pixelInjected) {
+                    let pixelInline = document.createElement('script');
+                    pixelInline.innerHTML = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', '${data.meta_pixel_id}'); fbq('track', 'PageView');`;
+                    document.head.appendChild(pixelInline);
+                    window.pixelInjected = true;
+                }
             }
+            
             if(cachedFav) applyFavicon(cachedFav);
             const cachedStr = localStorage.getItem(CACHE_KEY); let cached = null;
             try { cached = JSON.parse(cachedStr); } catch(e){}
@@ -104,16 +195,17 @@
         .bg-orb-1 { top: -10%; left: -10%; background-color: #e0f2fe; }
         .bg-orb-2 { bottom: -10%; right: -10%; background-color: #bae6fd; }
 
+        .auth-logo-wrapper { margin-bottom: 2rem; position: relative; z-index: 10; text-align: center; display: flex; justify-content: center; }
+        .auth-logo-wrapper img { max-height: 75px; object-fit: contain; }
+
         .auth-card {
             background-color: #ffffff; padding: 2.5rem; border-radius: 0.5rem; width: 100%; max-width: 28rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid var(--slate-200); position: relative; z-index: 10; transition: all 0.3s ease;
         }
-        .auth-title { font-size: 1.75rem; font-weight: 900; color: var(--slate-800); text-align: center; text-transform: uppercase; letter-spacing: -0.05em; margin-bottom: 0.5rem; }
+        .auth-title { font-size: 1.75rem; font-weight: 900; color: var(--slate-800); text-align: center; text-transform: uppercase; letter-spacing: -0.05em; margin: 0; }
         .auth-title .highlight { color: var(--brand-blue); }
-        .auth-subtitle { text-align: center; color: var(--slate-500); font-size: 0.875rem; margin-bottom: 2rem; font-weight: 500; }
 
         .auth-form-group { margin-bottom: 1.25rem; text-align: left; }
-        .auth-form-label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; margin-left: 0.25rem; }
-
+        
         .auth-input-wrapper { position: relative; }
         .auth-input-icon { position: absolute; top: 50%; transform: translateY(-50%); left: 1rem; color: var(--slate-400); pointer-events: none; display: flex; align-items: center; }
         .auth-input-icon svg { width: 1.25rem; height: 1.25rem; }
@@ -122,7 +214,6 @@
             width: 100%; padding: 0.875rem 3rem 0.875rem 3rem; background-color: #f4f7f9; border-radius: 0.375rem; border: 1px solid var(--slate-200); outline: none; font-weight: 600; color: var(--slate-800); transition: all 0.2s ease; font-family: inherit; font-size: 0.875rem;
         }
         .auth-input-field::placeholder { color: var(--slate-400); font-weight: 500; }
-        .auth-input-field-no-icon { padding-left: 1rem; }
         .auth-input-field:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px #e0f2fe; background-color: white; }
         
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -134,7 +225,7 @@
         .auth-toggle-password svg { width: 1.25rem; height: 1.25rem; }
 
         .auth-btn {
-            width: 100%; margin-top: 1rem; padding: 1rem; border-radius: 0.375rem; font-weight: 800; font-size: 0.875rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit;
+            width: 100%; margin-top: 1.5rem; padding: 1rem; border-radius: 0.375rem; font-weight: 800; font-size: 0.875rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit;
         }
         .auth-btn svg { width: 1.25rem; height: 1.25rem; }
         .auth-btn-primary { background-color: var(--brand-blue); color: white; }
@@ -142,13 +233,13 @@
         .auth-btn-dark { background-color: var(--slate-800); color: white; }
         .auth-btn-dark:hover { background-color: var(--slate-900); }
 
-        .auth-toggle-section { margin-top: 2rem; text-align: center; font-size: 0.875rem; font-weight: 500; color: var(--slate-500); }
-        .auth-toggle-link { color: var(--brand-blue); text-transform: uppercase; margin-left: 0.25rem; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; background: none; border: none; cursor: pointer; font-weight: 800; transition: color 0.2s ease; font-family: inherit; }
-        .auth-toggle-link:hover { color: var(--brand-blue-hover); }
-
-        .auth-back-home { margin-top: 2rem; text-align: center; position: relative; z-index: 10; }
-        .auth-btn-home { display: inline-flex; align-items: center; gap: 0.5rem; background: white; border: 1px solid var(--slate-200); color: var(--slate-500); padding: 0.6rem 1.25rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem; transition: all 0.2s ease; }
-        .auth-btn-home:hover { color: var(--slate-800); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .auth-bottom-card {
+            background-color: #f8fafc; padding: 1.5rem; border-radius: 0.5rem; width: 100%; max-width: 28rem; border: 1px solid var(--slate-200); margin-top: 1rem; position: relative; z-index: 10;
+        }
+        .auth-bottom-card-text { text-align: center; font-size: 0.875rem; font-weight: 500; color: var(--slate-600); }
+        
+        .auth-toggle-link { color: var(--brand-blue); text-transform: capitalize; margin-left: 0.25rem; text-decoration: none; background: none; border: none; cursor: pointer; font-weight: 700; transition: color 0.2s ease; font-family: inherit; }
+        .auth-toggle-link:hover { color: var(--brand-blue-hover); text-decoration: underline; }
 
         /* =========================================
            UI DASHBOARD MEMBER AREA
@@ -325,7 +416,7 @@
         /* =========================================
            MODALS
            ========================================= */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); transition: opacity 0.3s; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 110; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); transition: opacity 0.3s; }
         .modal-card { background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 28rem; padding: 2rem; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--slate-200); position: relative; overflow: hidden; }
         
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 10; }
@@ -366,13 +457,6 @@
         
         .btn-copy { width: 100%; padding: 0.75rem 1rem; border-radius: 0.375rem; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; }
         .btn-copy svg { width: 1rem; height: 1rem; pointer-events: none; }
-
-        .skeleton { background: var(--slate-200); background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); border-radius: 0.25rem; background-size: 200% 100%; animation: 1.5s shine linear infinite; }
-        .skel-title { height: 1.25rem; width: 75%; margin-bottom: 0.75rem; }
-        .skel-text { height: 0.75rem; width: 100%; margin-bottom: 0.5rem; }
-        .skel-text-short { height: 0.75rem; width: 66%; margin-bottom: 2rem; }
-        .skel-price { height: 1.25rem; width: 33%; margin-bottom: 1.5rem; }
-        .skel-btn { height: 2.25rem; width: 100%; border-radius: 0.375rem; }
     </style>
 </head>
 <body>
@@ -383,27 +467,27 @@
         <div class="bg-orb bg-orb-1"></div>
         <div class="bg-orb bg-orb-2"></div>
 
-        <div class="auth-card">
-            <h1 class="auth-title">
-                <span id="form-title">LOGIN</span> <span class="dyn-site-name highlight">MEMBER</span>
+        <div class="auth-logo-wrapper">
+            <img id="auth-logo" src="" alt="Site Logo" class="hidden">
+            <h1 id="auth-logo-text" class="auth-title">
+                <span class="dyn-site-name highlight">MEMBER</span> AREA
             </h1>
-            <p id="form-subtitle" class="auth-subtitle">Silakan masuk untuk akses dashboard.</p>
-            
+        </div>
+
+        <div class="auth-card">
             <div id="view-login" class="fade-in">
                 <form id="form-login">
                     <div class="auth-form-group">
-                        <label class="auth-form-label">Alamat Email</label>
                         <div class="auth-input-wrapper">
                             <div class="auth-input-icon"><i data-lucide="mail"></i></div>
-                            <input type="email" id="email" class="auth-input-field" placeholder="nama@email.com" required>
+                            <input type="email" id="email" class="auth-input-field" placeholder="Alamat Email" required>
                         </div>
                     </div>
                     
                     <div class="auth-form-group">
-                        <label class="auth-form-label">Password</label>
                         <div class="auth-input-wrapper">
                             <div class="auth-input-icon"><i data-lucide="lock"></i></div>
-                            <input type="password" id="pass" class="auth-input-field" placeholder="••••••••" required>
+                            <input type="password" id="pass" class="auth-input-field" placeholder="Password" required>
                             <button type="button" class="auth-toggle-password" onclick="togglePasswordVisibility('pass', this)">
                                 <i data-lucide="eye-off"></i>
                             </button>
@@ -414,33 +498,35 @@
                         Login
                     </button>
                 </form>
-                
-                <div class="auth-toggle-section">
-                    Belum punya akun? <button onclick="toggleAuthView('register')" class="auth-toggle-link">DAFTAR DI SINI</button>
-                </div>
             </div>
 
             <div id="view-register" class="hidden">
                 <form id="form-register">
                     <div class="auth-form-group">
-                        <label class="auth-form-label">Nama Lengkap</label>
-                        <input type="text" id="reg-nama" class="auth-input-field auth-input-field-no-icon" placeholder="Budi Santoso" required>
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label class="auth-form-label">Alamat Email</label>
-                        <input type="email" id="reg-email" class="auth-input-field auth-input-field-no-icon" placeholder="budi@email.com" required>
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label class="auth-form-label">Nomor WhatsApp</label>
-                        <input type="number" id="reg-wa" class="auth-input-field auth-input-field-no-icon" placeholder="62812xxxx" required>
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label class="auth-form-label">Buat Password</label>
                         <div class="auth-input-wrapper">
-                            <input type="password" id="reg-pass" class="auth-input-field auth-input-field-no-icon" placeholder="Minimal 6 karakter" minlength="6" required>
+                            <div class="auth-input-icon"><i data-lucide="user"></i></div>
+                            <input type="text" id="reg-nama" class="auth-input-field" placeholder="Nama Lengkap" required>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-form-group">
+                        <div class="auth-input-wrapper">
+                            <div class="auth-input-icon"><i data-lucide="mail"></i></div>
+                            <input type="email" id="reg-email" class="auth-input-field" placeholder="Alamat Email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-form-group">
+                        <div class="auth-input-wrapper">
+                            <div class="auth-input-icon"><i data-lucide="phone"></i></div>
+                            <input type="number" id="reg-wa" class="auth-input-field" placeholder="Nomor WhatsApp" required>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-form-group">
+                        <div class="auth-input-wrapper">
+                            <div class="auth-input-icon"><i data-lucide="lock"></i></div>
+                            <input type="password" id="reg-pass" class="auth-input-field" placeholder="Buat Password" minlength="6" required>
                             <button type="button" class="auth-toggle-password" onclick="togglePasswordVisibility('reg-pass', this)">
                                 <i data-lucide="eye-off"></i>
                             </button>
@@ -451,17 +537,18 @@
                         Buat Akun Member
                     </button>
                 </form>
-
-                <div class="auth-toggle-section">
-                    Sudah punya akun? <button onclick="toggleAuthView('login')" class="auth-toggle-link">Login Di Sini</button>
-                </div>
             </div>
         </div>
         
-        <div class="auth-back-home">
-            <a href="/" class="auth-btn-home">
-                <i data-lucide="home"></i> Kembali ke Beranda
-            </a>
+        <div class="auth-bottom-card">
+            <div id="login-links" class="auth-bottom-card-text">
+                <div>Belum punya akun? <button type="button" onclick="toggleAuthView('register')" class="auth-toggle-link">Register</button></div>
+                <div style="margin-top: 0.5rem;">Lupa password? <button type="button" onclick="openLupaPasswordModal()" class="auth-toggle-link">Reset Password</button></div>
+            </div>
+            
+            <div id="register-links" class="auth-bottom-card-text hidden">
+                <div>Sudah punya akun? <button type="button" onclick="toggleAuthView('login')" class="auth-toggle-link">Login Di Sini</button></div>
+            </div>
         </div>
     </div>
 
@@ -541,7 +628,7 @@
                                     <thead>
                                         <tr>
                                             <th>Tanggal</th>
-                                            <th>Nama Produk/Pembeli</th>
+                                            <th>Produk/Kontak</th>
                                             <th>Komisi</th>
                                             <th>Status</th>
                                         </tr>
@@ -610,89 +697,109 @@
                 </div>
             </div>
         </main>
-
-        <div id="rekening-modal" class="modal-overlay hidden">
-            <div class="modal-card" id="rekening-modal-content" style="transform: scale(0.95); opacity: 0;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Pengaturan Rekening</h3>
-                    <button onclick="closeRekeningModal()" class="btn-close"><i data-lucide="x"></i></button>
-                </div>
-                <p class="modal-desc">Rekening ini digunakan admin untuk mentransfer komisi affiliate Anda.</p>
-                <form onsubmit="prosesUpdateRekening(event)">
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Nama Bank / E-Wallet</label>
-                        <input type="text" id="input-nama-bank" required class="modal-form-input" placeholder="Misal: BCA / Dana / OVO">
-                    </div>
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Nomor Rekening</label>
-                        <input type="number" id="input-nomor-rek" required class="modal-form-input" placeholder="Masukkan angka">
-                    </div>
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Atas Nama (Pemilik Rekening)</label>
-                        <input type="text" id="input-atas-nama" required class="modal-form-input" placeholder="Nama sesuai buku tabungan">
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" onclick="closeRekeningModal()" class="btn-modal-cancel">Batal</button>
-                        <button type="submit" id="btn-save-rekening" class="btn-modal-save">Simpan <i data-lucide="save"></i></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="password-modal" class="modal-overlay hidden">
-            <div class="modal-card" id="password-modal-content" style="transform: scale(0.95); opacity: 0;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Ganti Password</h3>
-                    <button onclick="closePasswordModal()" class="btn-close"><i data-lucide="x"></i></button>
-                </div>
-                <form onsubmit="prosesGantiPassword(event)">
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Password Lama</label>
-                        <input type="password" id="input-password-lama" required class="modal-form-input">
-                    </div>
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Password Baru</label>
-                        <input type="password" id="input-password-baru" required class="modal-form-input">
-                    </div>
-                    <div class="modal-form-group">
-                        <label class="modal-form-label">Konfirmasi Password</label>
-                        <input type="password" id="input-konfirmasi-password" required class="modal-form-input">
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" onclick="closePasswordModal()" class="btn-modal-cancel">Batal</button>
-                        <button type="submit" id="btn-save-password" class="btn-modal-save">Simpan <i data-lucide="save"></i></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="affiliate-modal" class="modal-overlay hidden">
-            <div class="modal-card" id="affiliate-modal-content" style="transform: scale(0.95); opacity: 0;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Salin Link Affiliate</h3>
-                    <button onclick="closeAffiliateModal()" class="btn-close" title="Tutup Modal"><i data-lucide="x"></i></button>
-                </div>
-                <p class="modal-desc">Pilih link promosi yang ingin Anda bagikan. Anda akan mendapatkan komisi dari setiap penjualan.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div class="aff-link-box theme-orange">
-                        <div class="aff-link-header">
-                            <h4 class="aff-link-title">Link Landing Page</h4>
-                            <div class="aff-link-icon"><i data-lucide="layout-template"></i></div>
-                        </div>
-                        <button onclick="copySpecificLink('lp')" class="btn-copy">Salin Link <i data-lucide="copy"></i></button>
-                    </div>
-                    <div class="aff-link-box theme-blue">
-                        <div class="aff-link-header">
-                            <h4 class="aff-link-title">Link Checkout Instan</h4>
-                            <div class="aff-link-icon"><i data-lucide="shopping-cart"></i></div>
-                        </div>
-                        <button onclick="copySpecificLink('checkout')" class="btn-copy">Salin Link <i data-lucide="copy"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div> 
+
+    <div id="lupa-password-modal" class="modal-overlay hidden">
+        <div class="modal-card" id="lupa-password-modal-content" style="transform: scale(0.95); opacity: 0;">
+            <div class="modal-header">
+                <h3 class="modal-title">Lupa Password</h3>
+                <button type="button" onclick="closeLupaPasswordModal()" class="btn-close"><i data-lucide="x"></i></button>
+            </div>
+            <p class="modal-desc">Masukkan alamat email yang terdaftar. Sistem akan mengirimkan informasi password Anda ke email tersebut.</p>
+            <form onsubmit="prosesLupaPassword(event)">
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Alamat Email</label>
+                    <input type="email" id="input-lupa-email" required class="modal-form-input" placeholder="nama@email.com">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeLupaPasswordModal()" class="btn-modal-cancel">Batal</button>
+                    <button type="submit" id="btn-submit-lupa" class="btn-modal-save">Kirim <i data-lucide="send"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="rekening-modal" class="modal-overlay hidden">
+        <div class="modal-card" id="rekening-modal-content" style="transform: scale(0.95); opacity: 0;">
+            <div class="modal-header">
+                <h3 class="modal-title">Pengaturan Rekening</h3>
+                <button type="button" onclick="closeRekeningModal()" class="btn-close"><i data-lucide="x"></i></button>
+            </div>
+            <p class="modal-desc">Rekening ini digunakan admin untuk mentransfer komisi affiliate Anda.</p>
+            <form onsubmit="prosesUpdateRekening(event)">
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Nama Bank / E-Wallet</label>
+                    <input type="text" id="input-nama-bank" required class="modal-form-input" placeholder="Misal: BCA / Dana / OVO">
+                </div>
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Nomor Rekening</label>
+                    <input type="number" id="input-nomor-rek" required class="modal-form-input" placeholder="Masukkan angka">
+                </div>
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Atas Nama (Pemilik Rekening)</label>
+                    <input type="text" id="input-atas-nama" required class="modal-form-input" placeholder="Nama sesuai buku tabungan">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeRekeningModal()" class="btn-modal-cancel">Batal</button>
+                    <button type="submit" id="btn-save-rekening" class="btn-modal-save">Simpan <i data-lucide="save"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="password-modal" class="modal-overlay hidden">
+        <div class="modal-card" id="password-modal-content" style="transform: scale(0.95); opacity: 0;">
+            <div class="modal-header">
+                <h3 class="modal-title">Ganti Password</h3>
+                <button type="button" onclick="closePasswordModal()" class="btn-close"><i data-lucide="x"></i></button>
+            </div>
+            <form onsubmit="prosesGantiPassword(event)">
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Password Lama</label>
+                    <input type="password" id="input-password-lama" required class="modal-form-input">
+                </div>
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Password Baru</label>
+                    <input type="password" id="input-password-baru" required class="modal-form-input">
+                </div>
+                <div class="modal-form-group">
+                    <label class="modal-form-label">Konfirmasi Password</label>
+                    <input type="password" id="input-konfirmasi-password" required class="modal-form-input">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closePasswordModal()" class="btn-modal-cancel">Batal</button>
+                    <button type="submit" id="btn-save-password" class="btn-modal-save">Simpan <i data-lucide="save"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="affiliate-modal" class="modal-overlay hidden">
+        <div class="modal-card" id="affiliate-modal-content" style="transform: scale(0.95); opacity: 0;">
+            <div class="modal-header">
+                <h3 class="modal-title">Salin Link Affiliate</h3>
+                <button type="button" onclick="closeAffiliateModal()" class="btn-close" title="Tutup Modal"><i data-lucide="x"></i></button>
+            </div>
+            <p class="modal-desc">Pilih link promosi yang ingin Anda bagikan. Anda akan mendapatkan komisi dari setiap penjualan.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="aff-link-box theme-orange">
+                    <div class="aff-link-header">
+                        <h4 class="aff-link-title">Link Landing Page</h4>
+                        <div class="aff-link-icon"><i data-lucide="layout-template"></i></div>
+                    </div>
+                    <button type="button" onclick="copySpecificLink('lp')" class="btn-copy">Salin Link <i data-lucide="copy"></i></button>
+                </div>
+                <div class="aff-link-box theme-blue">
+                    <div class="aff-link-header">
+                        <h4 class="aff-link-title">Link Checkout Instan</h4>
+                        <div class="aff-link-icon"><i data-lucide="shopping-cart"></i></div>
+                    </div>
+                    <button type="button" onclick="copySpecificLink('checkout')" class="btn-copy">Salin Link <i data-lucide="copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script>
         (function() {
@@ -785,16 +892,19 @@
         function toggleAuthView(view) {
             const viewLogin = document.getElementById('view-login');
             const viewRegister = document.getElementById('view-register');
-            const formTitle = document.getElementById('form-title');
+            const loginLinks = document.getElementById('login-links');
+            const registerLinks = document.getElementById('register-links');
 
             if (view === 'register') {
                 viewLogin.classList.add('hidden'); viewLogin.classList.remove('fade-in');
                 viewRegister.classList.remove('hidden'); viewRegister.classList.add('fade-in');
-                formTitle.innerText = 'DAFTAR';
+                if(loginLinks) loginLinks.classList.add('hidden');
+                if(registerLinks) registerLinks.classList.remove('hidden');
             } else {
                 viewRegister.classList.add('hidden'); viewRegister.classList.remove('fade-in');
                 viewLogin.classList.remove('hidden'); viewLogin.classList.add('fade-in');
-                formTitle.innerText = 'LOGIN';
+                if(registerLinks) registerLinks.classList.add('hidden');
+                if(loginLinks) loginLinks.classList.remove('hidden');
             }
         }
 
@@ -907,7 +1017,9 @@
         function openRekeningModal() {
             const m = document.getElementById('rekening-modal'); const c = document.getElementById('rekening-modal-content'); 
             m.classList.remove('hidden'); void m.offsetWidth; m.style.opacity = '1'; c.style.transform = 'scale(1)'; c.style.opacity = '1';
-            document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('open');
+            
+            const sb = document.getElementById('sidebar'); if(sb) sb.classList.remove('open'); 
+            const sbo = document.getElementById('sidebar-overlay'); if(sbo) sbo.classList.remove('open');
         }
         function closeRekeningModal() {
             const m = document.getElementById('rekening-modal'); const c = document.getElementById('rekening-modal-content'); 
@@ -918,12 +1030,52 @@
         function openPasswordModal() { 
             const m = document.getElementById('password-modal'); const c = document.getElementById('password-modal-content'); 
             m.classList.remove('hidden'); void m.offsetWidth; m.style.opacity = '1'; c.style.transform = 'scale(1)'; c.style.opacity = '1';
-            document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('open'); 
+            
+            const sb = document.getElementById('sidebar'); if(sb) sb.classList.remove('open'); 
+            const sbo = document.getElementById('sidebar-overlay'); if(sbo) sbo.classList.remove('open'); 
         }
         function closePasswordModal() { 
             const m = document.getElementById('password-modal'); const c = document.getElementById('password-modal-content'); 
             m.style.opacity = '0'; c.style.transform = 'scale(0.95)'; c.style.opacity = '0';
             setTimeout(() => { m.classList.add('hidden'); document.getElementById('input-password-lama').value = ''; document.getElementById('input-password-baru').value = ''; document.getElementById('input-konfirmasi-password').value = ''; }, 200); 
+        }
+
+        function openLupaPasswordModal() {
+            const m = document.getElementById('lupa-password-modal'); const c = document.getElementById('lupa-password-modal-content');
+            m.classList.remove('hidden'); void m.offsetWidth; m.style.opacity = '1'; c.style.transform = 'scale(1)'; c.style.opacity = '1';
+            
+            const emailLogin = document.getElementById('email').value;
+            if(emailLogin) { document.getElementById('input-lupa-email').value = emailLogin; }
+        }
+        function closeLupaPasswordModal() {
+            const m = document.getElementById('lupa-password-modal'); const c = document.getElementById('lupa-password-modal-content');
+            m.style.opacity = '0'; c.style.transform = 'scale(0.95)'; c.style.opacity = '0';
+            setTimeout(() => { m.classList.add('hidden'); document.getElementById('input-lupa-email').value = ''; }, 200);
+        }
+
+        async function prosesLupaPassword(event) {
+            if(event) event.preventDefault();
+            const uEmail = document.getElementById('input-lupa-email').value;
+            
+            const btn = document.getElementById('btn-submit-lupa'); const oriText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Loading...'; btn.disabled = true; lucide.createIcons();
+
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                const res = await fetch(targetUrl, { method: 'POST', body: JSON.stringify({ action: 'forgot_password', email: uEmail }) });
+                const r = await res.json();
+                
+                if(r.status === 'success') {
+                    showToast("Sistem telah mengirim informasi password ke email Anda!", "success");
+                    closeLupaPasswordModal();
+                } else {
+                    showToast(r.message || "Gagal memproses, pastikan email terdaftar.", "error");
+                }
+            } catch(e) {
+                showToast("Gagal menghubungi server.", "error");
+            } finally {
+                btn.innerHTML = oriText; btn.disabled = false;
+            }
         }
 
         async function prosesUpdateRekening(event) {
@@ -945,8 +1097,17 @@
 
         async function prosesGantiPassword(event) {
             if(event) event.preventDefault(); 
-            const uEmail = sessionStorage.getItem('user_email') || '';
-            const pLama = document.getElementById('input-password-lama').value; const pBaru = document.getElementById('input-password-baru').value; const pKonf = document.getElementById('input-konfirmasi-password').value;
+            
+            const uEmail = sessionStorage.getItem('user_email');
+            
+            if (!uEmail) {
+                closePasswordModal();
+                return showToast("Aksi ditolak. Anda belum login!", "error");
+            }
+
+            const pLama = document.getElementById('input-password-lama').value; 
+            const pBaru = document.getElementById('input-password-baru').value; 
+            const pKonf = document.getElementById('input-konfirmasi-password').value;
             if (pBaru !== pKonf) { return showToast("Password baru tidak cocok!", "error"); } if (pBaru.length < 6) { return showToast("Password minimal 6 karakter!", "error"); }
             
             const btn = document.getElementById('btn-save-password'); const oriText = btn.innerHTML;
@@ -962,15 +1123,14 @@
         }
 
         function renderDashboardUI(r) {
-            
             let totalLead = 0;
             let totalSales = 0;
             let totalOmset = 0;
             
             if (r.prospek && r.prospek.length > 0) {
                 totalLead = r.prospek.length;
-                totalSales = r.prospek.filter(p => p.status === 'Lunas').length;
-                totalOmset = r.prospek.filter(p => p.status === 'Lunas').reduce((sum, p) => sum + (Number(p.harga_produk) || 0), 0);
+                totalSales = r.prospek.filter(p => p.status === 'Lunas' || p.status === 'Success' || p.status === 'Komisi Cair').length;
+                totalOmset = r.prospek.filter(p => p.status === 'Lunas' || p.status === 'Success' || p.status === 'Komisi Cair').reduce((sum, p) => sum + (Number(p.harga_produk) || 0), 0);
             }
             
             document.getElementById('stat-lead').innerText = totalLead;
@@ -988,12 +1148,10 @@
                     if (p.url && p.url.includes('akses-lms.html')) { linkMateri = p.url; }
 
                     let bumpBtnHTML = '';
-                    if (p.bump_access) {
-                        let finalBumpUrl = (p.bump_url && p.bump_url !== "") ? p.bump_url : "#";
-                        let btnText = (finalBumpUrl === "#") ? "Link Bonus Kosong" : "Akses Bonus";
+                    if (p.bump_access && p.bump_url && p.bump_url.trim() !== "" && p.bump_url.trim() !== "#") {
                         bumpBtnHTML = `
-                        <a href="${finalBumpUrl}" target="_blank" class="btn-bump mt-2">
-                            <i data-lucide="gift"></i> ${btnText}
+                        <a href="${p.bump_url.trim()}" target="_blank" class="btn-bump mt-2">
+                            <i data-lucide="gift"></i> Produk Bump
                         </a>`;
                     }
 
@@ -1006,7 +1164,7 @@
                         <div class="card-actions">
                             <div class="action-row">
                                 <a href="${linkMateri}" class="btn-main primary">
-                                    Materi Utama <i data-lucide="arrow-right"></i>
+                                    Akses <i data-lucide="arrow-right"></i>
                                 </a>
                                 <button onclick="openAffiliateModal('${p.id}', '${p.lp_url || ''}')" class="btn-icon">
                                     <i data-lucide="share-2"></i>
@@ -1060,15 +1218,23 @@
             if (r.prospek && r.prospek.length > 0) {
                 prospekContainer.innerHTML = r.prospek.map(p => {
                     let bClass = 'badge-pending';
-                    if(p.status === 'Lunas') bClass = 'badge-lunas';
-                    else if(p.status === 'Expired') bClass = 'badge-expired';
+                    let extStyle = '';
+                    
+                    if(p.status === 'Lunas' || p.status === 'Success') {
+                        bClass = 'badge-lunas';
+                    } else if(p.status === 'Expired' || p.status === 'Cancelled') {
+                        bClass = 'badge-expired';
+                    } else if(p.status === 'Komisi Cair') {
+                        bClass = '';
+                        extStyle = 'background-color: var(--brand-orange); color: white; border: none;';
+                    }
                     
                     return `
                     <tr>
                         <td>${p.tanggal}</td>
-                        <td style="font-weight: 700; color: var(--slate-800);">${p.produk}<br><span style="font-size:0.65rem; color:var(--slate-500); font-weight:normal;">${p.nama}</span></td>
+                        <td style="font-weight: 700; color: var(--slate-800);">${p.produk}<br><span style="font-size:0.65rem; color:var(--slate-500); font-weight:normal;">${p.nama} | Level ${p.level || 1}</span></td>
                         <td style="font-weight: 800; color: var(--brand-blue);">Rp ${Number(p.komisi).toLocaleString('id-ID')}</td>
-                        <td><span class="badge-status ${bClass}">${p.status}</span></td>
+                        <td><span class="badge-status ${bClass}" style="${extStyle}">${p.status}</span></td>
                     </tr>`;
                 }).join('');
             } else {

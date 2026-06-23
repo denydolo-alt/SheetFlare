@@ -1,7 +1,7 @@
 {
   "name": "cloudmember",
-  "version": "1.0.42",
-  "release_date": "2026-06-11",
+  "version": "1.0.53",
+  "release_date": "2026-06-14",
   "channel": "stable",
   "minimum_schema": 1,
   "repository_url": "https://github.com/USERNAME/cloudmember-master",
@@ -56,6 +56,18 @@
     "Menghapus kategori halaman CMS dari admin agar pengelolaan halaman lebih sederhana.",
     "Memisahkan deskripsi umum LMS dan catatan per video agar keduanya tampil jelas di halaman akses LMS.",
     "Menambahkan tombol hapus data order pada dashboard admin.",
-    "Menambahkan filter target blast pesan berdasarkan produk."
+    "Menambahkan filter target blast pesan berdasarkan produk.",
+    "Memperbaiki notifikasi StarSender agar memakai payload resmi StarSender V3 dan tetap kompatibel dengan endpoint lama.",
+    "Menghapus opsi StarSender dari Email Gateway; StarSender tetap khusus untuk WhatsApp Gateway.",
+    "Memperbaiki pengiriman WhatsApp StarSender dan menambahkan tombol tes gateway di admin.",
+    "Menambahkan site_url pada notifikasi pencairan komisi affiliate.",
+    "Mengoptimalkan performa Cloudflare Pages dan D1 dengan schema patch yang tidak memblokir asset statis, index otomatis, katalog publik lebih ringan, dan payload admin dibatasi.",
+    "Menambahkan marker schema D1 agar cold start API tidak menjalankan patch database berulang saat schema sudah terbaru.",
+    "Menambahkan upload file HTML pada Halaman CMS dengan slug otomatis dari nama file.",
+    "Menyempurnakan elemen YouTube Visual Builder dengan input URL/ID dan preview embed langsung.",
+    "Memperbaiki pilihan Gmail pada Email Gateway agar memakai Google Apps Script Web App sebagai relay pengiriman.",
+    "Mengaktifkan provider Kirim.Email pada Email Gateway memakai API Transactional dengan username, API key, dan domain terverifikasi.",
+    "Menampilkan nomor WhatsApp di bawah email pada kolom Customer dashboard admin.",
+    "Memperbaiki integrasi autoresponder Mailketing agar member otomatis masuk ke email list melalui endpoint addsubtolist dengan nama dan nomor WhatsApp."
   ]
 }
