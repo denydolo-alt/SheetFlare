@@ -3,7 +3,7 @@
  * Kecepatan 100% Stabil. Cache tidak akan pernah expired!
  */
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbwtixGFSoTkxZLUUjzKTpgFr4Y75CdB5Ov4eKSRb1SbkZHQ1jG_63Dekx3dJG3cCm6qfQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwtixGFSoTkxZLUUjzKTpgFr4Y75CdB5Ov4eKSRb1SbkZHQ1jG_63Dekx3dJG3cCm6qfQ/exec";
 
 export default {
   async fetch(request, env, ctx) {
