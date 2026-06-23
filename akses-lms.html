@@ -15,6 +15,7 @@
     <script src="config.js?v=2026"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="https://unpkg.com/lucide@latest" defer></script>
     
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -125,6 +126,81 @@
         .spinner { width: 3rem; height: 3rem; border: 4px solid #e0f7ff; border-top-color: var(--brand-blue); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+
+        /* Deskripsi LMS - support HTML aman */
+        .lms-desc-stack {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .lms-desc-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.875rem;
+            background: #ffffff;
+            padding: 1rem;
+        }
+        .lms-desc-card h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.65rem;
+            color: #0f172a;
+            font-size: 0.9rem;
+            font-weight: 900;
+        }
+        .lms-desc-content {
+            color: #64748b;
+            line-height: 1.7;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+        .lms-desc-content a {
+            color: var(--brand-blue);
+            font-weight: 800;
+            text-decoration: underline;
+        }
+        .lms-desc-content a:hover { opacity: 0.85; }
+        .lms-desc-content p { margin: 0 0 0.85rem; }
+        .lms-desc-content p:last-child { margin-bottom: 0; }
+        .lms-desc-content ul, .lms-desc-content ol { padding-left: 1.25rem; margin: 0.75rem 0; }
+        .lms-desc-content li { margin-bottom: 0.35rem; }
+        .lms-desc-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 0.75rem 0; }
+        .lms-desc-content iframe { width: 100%; min-height: 320px; border: 0; border-radius: 0.75rem; margin: 0.75rem 0; }
+        .lms-desc-content table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+        .lms-desc-content th, .lms-desc-content td { border: 1px solid #e2e8f0; padding: 0.6rem; text-align: left; }
+        .lms-desc-content th { background: #f8fafc; color: #0f172a; }
+        .lms-desc-content code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #0f172a;
+        }
+        .lms-desc-content pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+        }
+        .lms-desc-content .desc-btn, .lms-desc-content .btn-drive {
+            display: inline-block;
+            padding: 12px 18px;
+            background: var(--brand-blue);
+            color: #fff !important;
+            border-radius: 10px;
+            text-decoration: none !important;
+            font-weight: 800;
+            margin-top: 0.5rem;
+        }
+        .lms-desc-content .desc-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.75rem 0;
+        }
+
         #cert-btn-area { display: none; margin-top: 1.5rem; padding: 1.5rem; border: 2px dashed var(--brand-blue); border-radius: 0.75rem; background: #f0faff; text-align: center; }
         
         #toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
@@ -196,7 +272,16 @@
                 </div>
                 <div style="padding: 1.5rem;">
                     <h1 id="current-video-title" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Memuat video...</h1>
-                    <p id="course-desc" style="color: #64748b; line-height: 1.6; font-size: 0.9rem;"></p>
+                    <div class="lms-desc-stack">
+                        <section class="lms-desc-card" id="course-desc-card">
+                            <h2><i data-lucide="book-open" style="width:1rem;height:1rem;color:var(--brand-blue);"></i> Tentang Kelas</h2>
+                            <div id="course-desc" class="lms-desc-content"></div>
+                        </section>
+                        <section class="lms-desc-card" id="video-desc-card">
+                            <h2><i data-lucide="file-text" style="width:1rem;height:1rem;color:var(--brand-blue);"></i> Catatan Video</h2>
+                            <div id="video-desc" class="lms-desc-content"></div>
+                        </section>
+                    </div>
                     
                     <div id="cert-btn-area">
                         <div style="margin-bottom: 1rem;">
@@ -251,6 +336,7 @@
         let player;
         let playlist = [];
         let certData = {};
+        let courseDefaultDescription = "";
         let currentIndex = 0;
         let progressInterval;
         let blockerTimeout; 
@@ -270,6 +356,86 @@
                 document.title = "Ruang Belajar - " + data.site_name;
                 document.querySelectorAll('.dyn-site-name').forEach(el => { el.innerText = data.site_name; });
             }
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"]/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char];
+            });
+        }
+
+        function prepareDescriptionHtml(value) {
+            const text = String(value || '').trim();
+            if (!text) return '';
+            if (/<\/?[a-z][\s\S]*>/i.test(text)) return text;
+
+            return escapeHtml(text)
+                .split(/\n{2,}/)
+                .map(block => `<p>${block.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        function setDescriptionHtml(targetId, html, emptyText) {
+            const descEl = document.getElementById(targetId);
+            if (!descEl) return;
+            const rawHtml = String(html || '').trim();
+
+            if (!rawHtml) {
+                descEl.innerHTML = `<em style="color:#94a3b8;">${escapeHtml(emptyText || 'Deskripsi belum tersedia.')}</em>`;
+                return;
+            }
+
+            // DOMPurify membuat isian HTML di deskripsi lebih aman.
+            // Script/event berbahaya seperti <script> atau onclick akan dibersihkan.
+            const cleanHtml = window.DOMPurify
+                ? DOMPurify.sanitize(prepareDescriptionHtml(rawHtml), {
+                    ADD_TAGS: ['iframe'],
+                    ADD_ATTR: ['target', 'rel', 'allow', 'allowfullscreen', 'frameborder', 'scrolling', 'style', 'class'],
+                    FORBID_TAGS: ['script', 'object', 'embed'],
+                    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus']
+                })
+                : prepareDescriptionHtml(rawHtml);
+
+            descEl.innerHTML = cleanHtml;
+
+            // Semua link dari deskripsi dibuka di tab baru.
+            descEl.querySelectorAll('a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+        }
+
+        function setCourseDescription(html) {
+            setDescriptionHtml('course-desc', html, 'Deskripsi umum kelas belum tersedia.');
+        }
+
+        function setVideoDescription(html) {
+            setDescriptionHtml('video-desc', html, 'Belum ada catatan khusus untuk video ini.');
+        }
+
+        function getVideoDescription(videoItem) {
+            if (!videoItem || typeof videoItem !== 'object') return '';
+
+            // Support beberapa kemungkinan nama field dari backend/admin.
+            const possibleKeys = [
+                'deskripsi',
+                'description',
+                'desc',
+                'detail',
+                'materi_deskripsi',
+                'video_deskripsi',
+                'catatan',
+                'content',
+                'html'
+            ];
+
+            for (const key of possibleKeys) {
+                if (videoItem[key] !== undefined && String(videoItem[key]).trim() !== '') {
+                    return videoItem[key];
+                }
+            }
+
+            return '';
         }
 
         async function verifyAndLoad() {
@@ -292,7 +458,10 @@
                     if (prodRes.status === 'success' && prodRes.data) certData.product_full_name = prodRes.data.title;
                     
                     playlist = JSON.parse(lmsRes.data.videos || "[]");
-                    document.getElementById('course-desc').innerText = lmsRes.data.deskripsi || '';
+                    courseDefaultDescription = lmsRes.data.deskripsi || '';
+                    setCourseDescription(courseDefaultDescription);
+                    setVideoDescription('');
+                    console.log('Data playlist LMS:', playlist);
                     if (playlist.length > 0) {
                         renderPlaylist();
                         playVideo(playlist[0].id, playlist[0].title, 0);
@@ -309,17 +478,27 @@
 
         function renderPlaylist() {
             const container = document.getElementById('playlist-container');
-            container.innerHTML = playlist.map((v, i) => `
-                <div class="video-item" id="vid-item-${i}" onclick="playVideo('${v.id}', '${v.title}', ${i})">
+            container.innerHTML = '';
+
+            playlist.forEach((v, i) => {
+                const item = document.createElement('div');
+                item.className = 'video-item';
+                item.id = 'vid-item-' + i;
+                item.onclick = () => playVideo(v.id, v.title, i);
+                item.innerHTML = `
                     <div style="background: #f1f5f9; width: 2rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; flex-shrink: 0;">${i + 1}</div>
-                    <div style="flex-grow: 1;"><p style="font-size: 0.8rem; font-weight: 700; line-height: 1.3; margin:0;">${v.title}</p></div>
-                </div>
-            `).join('');
+                    <div style="flex-grow: 1;"><p style="font-size: 0.8rem; font-weight: 700; line-height: 1.3; margin:0;">${escapeHtml(v.title)}</p></div>
+                `;
+                container.appendChild(item);
+            });
         }
 
         function playVideo(id, title, index) {
             currentIndex = index;
-            document.getElementById('current-video-title').innerText = title;
+            const selectedVideo = playlist[index] || {};
+            document.getElementById('current-video-title').innerText = title || selectedVideo.title || 'Materi Video';
+            setCourseDescription(courseDefaultDescription);
+            setVideoDescription(getVideoDescription(selectedVideo));
             document.querySelectorAll('.video-item').forEach(item => item.classList.remove('active'));
             const el = document.getElementById('vid-item-' + index);
             if (el) el.classList.add('active');

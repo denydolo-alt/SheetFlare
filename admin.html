@@ -291,6 +291,8 @@
         .td-bold { font-weight: 700; color: var(--slate-800); }
         .td-mono { font-family: monospace; font-weight: 900; color: var(--brand-blue); }
         .td-sub { font-size: 0.625rem; color: var(--slate-500); font-weight: 500; display: block; margin-top: 0.25rem; }
+        .td-wa { color: var(--brand-blue); font-weight: 800; letter-spacing: 0; }
+        .td-wa.muted { color: var(--slate-400); font-weight: 600; }
         
         .action-btns { display: flex; justify-content: flex-end; gap: 0.5rem; }
         .btn-icon { padding: 0.375rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 1px solid var(--slate-200); background: white; color: var(--slate-600); }
@@ -339,6 +341,17 @@
         @media (min-width: 768px) { .settings-card { padding: 2rem; } }
         .settings-title { font-size: 1rem; font-weight: 800; color: var(--slate-800); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--slate-100); padding-bottom: 0.75rem; }
         .settings-title svg { width: 1.25rem; height: 1.25rem; color: var(--brand-blue); }
+        .settings-subnav { background: white; border: 1px solid var(--slate-200); border-radius: 0.5rem; padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; position: sticky; top: 4.75rem; z-index: 25; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .settings-subnav-btn { min-height: 2.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.6rem 0.85rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 800; color: var(--slate-600); border: 1px solid transparent; transition: all 0.2s; white-space: nowrap; }
+        .settings-subnav-btn svg { width: 1rem; height: 1rem; }
+        .settings-subnav-btn:hover { background: var(--slate-50); color: var(--brand-blue); }
+        .settings-subnav-btn.active { background: var(--blue-50); color: var(--brand-blue); border-color: var(--blue-100); }
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+        @media (max-width: 768px) {
+            .settings-subnav { top: 4rem; flex-wrap: nowrap; overflow-x: auto; padding: 0.4rem; margin-left: -0.25rem; margin-right: -0.25rem; }
+            .settings-subnav-btn { flex: 0 0 auto; padding: 0.55rem 0.7rem; font-size: 0.7rem; }
+        }
         
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
         @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -350,6 +363,24 @@
         .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 2px var(--blue-50); }
         .form-checkbox, .form-radio { width: 1rem; height: 1rem; accent-color: var(--brand-blue); cursor: pointer; }
         .form-textarea { min-height: 80px; resize: vertical; }
+
+        .blast-card { display: grid; gap: 1.25rem; }
+        .blast-message { min-height: 220px; line-height: 1.6; }
+        .blast-token-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .blast-token { display: inline-flex; align-items: center; min-height: 2rem; padding: 0.35rem 0.55rem; border-radius: 0.375rem; background: var(--slate-100); color: var(--slate-600); font-family: monospace; font-size: 0.72rem; font-weight: 800; border: 1px solid var(--slate-200); }
+        .blast-actions { display: flex; flex-direction: column; gap: 0.75rem; align-items: stretch; }
+        .blast-summary { border: 1px solid var(--slate-200); border-radius: 0.5rem; background: var(--slate-50); padding: 1rem; color: var(--slate-600); font-size: 0.875rem; line-height: 1.6; }
+        .blast-summary strong { color: var(--slate-900); }
+        .blast-sample-list { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .blast-sample-item { background: white; border: 1px solid var(--slate-200); border-radius: 0.375rem; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .blast-sample-name { font-size: 0.8125rem; font-weight: 900; color: var(--slate-800); }
+        .blast-sample-meta { font-size: 0.72rem; font-weight: 700; color: var(--slate-500); word-break: break-word; }
+        .blast-progress { border: 1px solid var(--blue-100); border-radius: 0.5rem; background: var(--blue-50); padding: 1rem; }
+        .blast-progress-top { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 0.75rem; font-size: 0.75rem; font-weight: 900; color: var(--slate-700); }
+        .blast-bar { height: 0.6rem; border-radius: 999px; overflow: hidden; background: white; border: 1px solid var(--blue-100); }
+        .blast-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--brand-blue), var(--brand-orange)); transition: width 0.25s ease; }
+        .blast-progress-meta { margin-top: 0.75rem; color: var(--slate-600); font-size: 0.75rem; font-weight: 700; line-height: 1.5; }
+        @media (min-width: 640px) { .blast-actions { flex-direction: row; justify-content: flex-end; } }
         
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         #modal-confirm { z-index: 450; }
@@ -460,6 +491,7 @@
             
             <nav class="sidebar-nav custom-scroll">
                 <button onclick="switchTab('orders')" id="nav-orders" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+                <button onclick="switchTab('blast')" id="nav-blast" class="nav-item"><i data-lucide="send"></i> Blast Pesan</button>
                 <button onclick="switchTab('products')" id="nav-products" class="nav-item"><i data-lucide="package"></i> Produk</button>
                 <button onclick="switchTab('coupons')" id="nav-coupons" class="nav-item"><i data-lucide="ticket"></i> Kupon Diskon</button>
                 <div class="nav-divider"></div>
@@ -564,6 +596,83 @@
                 </div>
             </div>
 
+            <div id="tab-blast" class="tab-content">
+                <div class="action-bar">
+                    <h3 class="action-title"><i data-lucide="send"></i> Blast Pesan</h3>
+                    <button type="button" onclick="previewBlastTargets()" id="btn-blast-preview-top" class="btn-outline" style="color: var(--brand-blue); border-color: var(--blue-200); background: var(--blue-50);">
+                        <i data-lucide="users"></i> Cek Target
+                    </button>
+                </div>
+                <div class="settings-card blast-card">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Target Penerima</label>
+                            <select id="blast-status" class="form-select">
+                                <option value="all">Semua Order</option>
+                                <option value="paid">Order Lunas</option>
+                                <option value="pending">Order Pending</option>
+                                <option value="cancelled">Order Cancel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Filter Produk</label>
+                            <select id="blast-products" class="form-select" multiple size="5">
+                                <option value="All" selected>Semua Produk</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Channel</label>
+                            <select id="blast-channel" class="form-select">
+                                <option value="both">WhatsApp + Email</option>
+                                <option value="wa">WhatsApp</option>
+                                <option value="email">Email</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Batch Per Kirim</label>
+                            <input type="number" id="blast-limit" class="form-input" min="1" max="50" value="25">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subject Email</label>
+                            <input type="text" id="blast-subject" class="form-input" value="Informasi dari {site_name}">
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Isi Pesan</label>
+                            <textarea id="blast-message" class="form-textarea blast-message custom-scroll">Halo Kak {nama},
+
+Kami ingin menginformasikan update terbaru dari {site_name}.
+
+Produk: {produk}
+Status Order: {status}
+Invoice: {invoice}
+
+Silakan login melalui:
+{login_url}
+
+Terima kasih.</textarea>
+                        </div>
+                    </div>
+                    <div class="blast-token-row">
+                        <span class="blast-token">{nama}</span>
+                        <span class="blast-token">{email}</span>
+                        <span class="blast-token">{whatsapp}</span>
+                        <span class="blast-token">{produk}</span>
+                        <span class="blast-token">{invoice}</span>
+                        <span class="blast-token">{total}</span>
+                        <span class="blast-token">{status}</span>
+                        <span class="blast-token">{login_url}</span>
+                    </div>
+                    <div id="blast-summary" class="blast-summary">
+                        <strong>Target belum dicek.</strong>
+                    </div>
+                    <div id="blast-progress" class="blast-progress hidden"></div>
+                    <div class="blast-actions">
+                        <button type="button" onclick="previewBlastTargets()" id="btn-blast-preview" class="btn-outline"><i data-lucide="search"></i> Cek Target</button>
+                        <button type="button" onclick="sendBlastMessages()" id="btn-blast-send" class="btn-dark"><i data-lucide="send"></i> Kirim Blast</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="tab-affiliate" class="tab-content">
                 <div class="action-bar"><h3 class="action-title">Pencairan Komisi Affiliate</h3></div>
                 <div class="table-wrap custom-scroll">
@@ -579,6 +688,9 @@
         <h3 class="action-title">Katalog Produk (<span id="count-prod">0</span>)</h3>
         
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="deleteSelectedProducts()" id="btn-delete-selected-products" class="btn-outline" style="color: var(--rose-500); border-color: #fecdd3; background: #fff1f2; display: none;">
+                <i data-lucide="trash-2"></i> Hapus Terpilih
+            </button>
             <button type="button" onclick="openProdModal()" class="btn-primary">+ Produk Baru</button>
             
             <button type="button" onclick="openProductImportModal()" class="btn-outline" style="border-color: var(--brand-orange); color: var(--brand-orange); cursor: pointer; z-index: 10;">
@@ -586,6 +698,7 @@
             </button>
         </div>
     </div>
+    <div id="product-category-filter" class="blast-token-row" style="margin-bottom: 1rem;"></div>
     <div id="list-products" class="prod-grid"></div>
 </div>
 
@@ -609,7 +722,7 @@
                 </div>
                 <div class="table-wrap custom-scroll">
                     <table class="table">
-                        <thead><tr><th style="width: 25%">Produk ID</th><th style="width: 40%">Total Video</th><th style="width: 35%; text-align: right;">Link Sakti & Aksi</th></tr></thead>
+                        <thead><tr><th style="width: 25%">Target Akses</th><th style="width: 40%">Total Video</th><th style="width: 35%; text-align: right;">Link Sakti & Aksi</th></tr></thead>
                         <tbody id="list-lms"></tbody>
                     </table>
                 </div>
@@ -620,6 +733,8 @@
                     <h3 class="action-title">Halaman CMS</h3>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <button onclick="openPageModal()" class="btn-primary" style="background: var(--slate-800);">+ Halaman Baru</button>
+                        <input type="file" id="cms-html-upload" class="hidden" accept=".html,.htm,text/html" onchange="handleCmsHtmlUpload(event)">
+                        <button type="button" onclick="document.getElementById('cms-html-upload').click()" class="btn-primary" style="background: var(--brand-blue);"><i data-lucide="file-up"></i> Upload HTML</button>
                         <button onclick="openVisualBuilder()" class="btn-primary" style="background: var(--brand-orange);"><i data-lucide="layout-template"></i> Visual Builder</button>
                     </div>
                 </div>
@@ -654,7 +769,18 @@
                     <button type="button" onclick="triggerPurgeCache()" id="btn-purge" class="btn-outline" style="color: var(--brand-orange); border-color: var(--amber-200); background: var(--amber-50);"><i data-lucide="eraser"></i> Purge CF Cache</button>
                 </div>
 
-                <form id="admin-access-form" class="settings-card">
+                <div class="settings-subnav custom-scroll" role="tablist" aria-label="Sub menu pengaturan">
+                    <button type="button" class="settings-subnav-btn active" data-settings-nav="general" onclick="switchSettingsSection('general')"><i data-lucide="layout"></i> Tampilan</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="payment" onclick="switchSettingsSection('payment')"><i data-lucide="credit-card"></i> Pembayaran</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="whatsapp" onclick="switchSettingsSection('whatsapp')"><i data-lucide="message-circle"></i> WhatsApp</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="email" onclick="switchSettingsSection('email')"><i data-lucide="mail"></i> Email</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="copywriting" onclick="switchSettingsSection('copywriting')"><i data-lucide="message-square-text"></i> Copywriting</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="tracking" onclick="switchSettingsSection('tracking')"><i data-lucide="pie-chart"></i> Tracking</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="api" onclick="switchSettingsSection('api')"><i data-lucide="cpu"></i> API</button>
+                    <button type="button" class="settings-subnav-btn" data-settings-nav="security" onclick="switchSettingsSection('security')"><i data-lucide="shield-check"></i> Keamanan</button>
+                </div>
+
+                <form id="admin-access-form" class="settings-card settings-section" data-settings-section="security">
                     <h3 class="settings-title"><i data-lucide="shield-check"></i> Keamanan Admin</h3>
                     <div class="form-grid">
                         <div class="form-group">
@@ -684,7 +810,7 @@
                 </form>
                 
                 <form id="admin-settings-form">
-                   <div class="settings-card">
+                   <div class="settings-card settings-section active" data-settings-section="general">
                         <h3 class="settings-title"><i data-lucide="layout"></i> Umum & Tampilan</h3>
                         <div class="form-grid">
                             
@@ -750,7 +876,7 @@
                             <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.25rem; margin-left: 1.75rem;">Akan memunculkan pop-up riwayat transaksi secara otomatis di pojok kiri bawah layar pengunjung.</p>
                         </div>
                     </div>
-                    <div class="settings-card">
+                    <div class="settings-card settings-section" data-settings-section="payment">
                         <h3 class="settings-title"><i data-lucide="credit-card"></i> Gerbang Pembayaran</h3>
                         <div style="background: var(--slate-50); padding: 1.5rem; border-radius: 0.375rem; border: 1px solid var(--slate-200); margin-bottom: 1.5rem;">
                             <h4 style="font-size: 0.875rem; font-weight: 800; color: var(--slate-800); margin-bottom: 1rem;">Metode Pembayaran Aktif</h4>
@@ -868,7 +994,7 @@
                         </div>
                     </div>
 
-                    <div class="settings-card">
+                    <div class="settings-card settings-section" data-settings-section="whatsapp">
                         <h3 class="settings-title"><i data-lucide="message-circle"></i> WhatsApp & Notifikasi</h3>
                         <div class="form-grid">
                             <div class="form-group"><label class="form-label">No WA Admin</label><input type="number" data-key="wa_admin" class="form-input" placeholder="628123xxxx"></div>
@@ -876,11 +1002,15 @@
                                 <label class="form-label">Pilih WA Gateway</label>
                                 <select data-key="wa_gateway" class="form-select"><option value="onesender">OneSender (Default)</option><option value="fonnte">Fonnte</option><option value="starsender">StarSender</option></select>
                             </div>
+                            <div class="form-group full"><label class="form-label">API URL WhatsApp Gateway</label><input type="url" data-key="wa_api_url" class="form-input" placeholder="OneSender custom URL atau StarSender API URL. Kosongkan untuk default StarSender V3."></div>
                             <div class="form-group full"><label class="form-label">API Token WhatsApp</label><input type="text" data-key="wa_token" class="form-input"></div>
+                            <div class="form-group full" style="display:flex; justify-content:flex-end; margin-bottom:0;">
+                                <button type="button" onclick="testWhatsAppGateway()" id="btn-test-wa" class="btn-outline" style="color: var(--brand-blue); border-color: var(--blue-200); background: var(--blue-50);"><i data-lucide="send"></i> Tes WhatsApp</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="settings-card">
+                    <div class="settings-card settings-section" data-settings-section="email">
                         <h3 class="settings-title"><i data-lucide="mail"></i> Email Gateway Server</h3>
                         <div class="form-grid">
                             <div class="form-group full">
@@ -889,7 +1019,7 @@
                                     <option value="resend">Resend.com API (Rekomendasi!)</option>
                                     <option value="mailketing">Mailketing API</option>
                                     <option value="kirimemail">Kirim.Email REST API</option>
-                                    <option value="google">Google Mail (Tidak Disarankan)</option>
+                                    <option value="google">Gmail via Google Apps Script</option>
                                 </select>
                             </div>
                             <div class="form-group"><label class="form-label">Nama Pengirim</label><input type="text" data-key="mail_sender_name" class="form-input" placeholder="Sistem SheetFlare"></div>
@@ -898,15 +1028,18 @@
                             <div id="email-api-box" class="form-group full hidden" style="border: 1px solid var(--slate-200); padding: 1.5rem; border-radius: 0.375rem; background: var(--slate-50); margin-top: 0.5rem;">
                                 <h4 style="font-size: 0.875rem; font-weight: 800; margin-bottom: 1rem; color: var(--slate-800);">Kredensial API Email</h4>
                                 <div class="form-grid">
-                                    <div class="form-group" style="margin: 0;"><label class="form-label">Username / Akun ID</label><input type="text" data-key="mail_username" class="form-input" placeholder="(Wajib untuk Kirim.Email)"></div>
-                                    <div class="form-group" style="margin: 0;"><label class="form-label">API Key / Token</label><input type="text" data-key="mail_api_key" class="form-input" placeholder="Token dari layanan email"></div>
-                                    <div class="form-group" style="margin: 0;"><label class="form-label">ID List Autoresponder</label><input type="text" data-key="mailketing_list_id" class="form-input" placeholder="Masukkan ID List Mailketing"></div>
+                                    <div id="mail-api-url-wrap" class="form-group full hidden" style="margin: 0;"><label class="form-label">URL Web App Gmail</label><input type="url" data-key="mail_api_url" class="form-input" placeholder="https://script.google.com/macros/s/.../exec"></div>
+                                    <div id="mail-domain-wrap" class="form-group full hidden" style="margin: 0;"><label class="form-label">Domain Terverifikasi Kirim.Email</label><input type="text" data-key="mail_domain" class="form-input" placeholder="domainanda.com (kosongkan = domain email pengirim)"></div>
+                                    <div id="mail-username-wrap" class="form-group" style="margin: 0;"><label class="form-label">Username / Akun ID</label><input type="text" data-key="mail_username" class="form-input" placeholder="(Wajib untuk Kirim.Email)"></div>
+                                    <div id="mail-api-key-wrap" class="form-group" style="margin: 0;"><label id="mail-api-key-label" class="form-label">API Key / Token</label><input type="text" data-key="mail_api_key" class="form-input" placeholder="Token dari layanan email"></div>
+                                    <div id="mail-list-wrap" class="form-group" style="margin: 0;"><label class="form-label">ID List Autoresponder</label><input type="text" data-key="mailketing_list_id" class="form-input" placeholder="Masukkan ID List Mailketing"></div>
                                 </div>
+                                <p id="email-provider-help" style="font-size: 0.75rem; color: var(--slate-500); line-height: 1.6; margin-top: 0.75rem;"></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="settings-card">
+                    <div class="settings-card settings-section" data-settings-section="copywriting">
                         <h3 class="settings-title"><i data-lucide="message-square-text"></i> Copywriting Notifikasi</h3>
                         <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: -0.75rem; margin-bottom: 1rem;">Placeholder: {nama}, {email}, {invoice}, {produk}, {total}, {metode}, {rekening}, {atas_nama}, {qris_url}, {login_url}, {landing_url}, {password}, {instruksi_pembayaran}, {link_pembayaran}, {info_bump}, {info_lisensi}, {lisensi}, {nama_affiliate}, {pembeli}, {email_pembeli}, {komisi}, {level}, {status}, {jumlah_order}, {rincian_level}</p>
                         <div class="form-grid">
@@ -985,14 +1118,16 @@ Komisi Masuk: {komisi}</textarea></div>
 Komisi affiliate Kakak sudah diproses pencairannya.
 Nominal Cair: {komisi}
 Jumlah Order: {jumlah_order}
-Rincian: {rincian_level}</textarea></div>
+Rincian: {rincian_level}
+Website: {site_url}</textarea></div>
                             <div class="form-group full"><label class="form-label">Email Affiliate - Komisi Cair</label><textarea data-key="notif_affiliate_payout_email" class="form-textarea" style="min-height: 130px;">Halo {nama_affiliate},
 
 Komisi affiliate Anda sudah diproses pencairannya.
 
 Nominal Cair: {komisi}
 Jumlah Order: {jumlah_order}
-Rincian: {rincian_level}</textarea></div>
+Rincian: {rincian_level}
+Website: {site_url}</textarea></div>
                             <div class="form-group full"><label class="form-label">Pengingat Pending Order 1</label><textarea data-key="notif_reminder_wa_1" class="form-textarea" style="min-height: 180px;">🕒 *Menunggu Pembayaran*
 
 Halo Kak *{nama}*,
@@ -1007,16 +1142,16 @@ Pesanan Kakak masih tersimpan dan menunggu pembayaran.
 
 Akses member akan terbuka otomatis setelah pembayaran terkonfirmasi.
 
-✨ *Lanjutkan dari halaman produk:*
-{landing_url}
+Instruksi pembayaran:
+{instruksi_pembayaran}
 
 Jika ada kendala, balas pesan ini ya Kak. Tim kami siap bantu. 🙏</textarea></div>
                             <div class="form-group full"><label class="form-label">Email Pengingat Pending Order 1</label><textarea data-key="notif_reminder_email_1" class="form-textarea" style="min-height: 150px;">Halo {nama},
 
 Pesanan {produk} dengan invoice #{invoice} masih menunggu pembayaran sebesar {total}.
 
-Selesaikan pembayaran melalui halaman berikut:
-{landing_url}
+Instruksi pembayaran:
+{instruksi_pembayaran}
 
 Setelah pembayaran terkonfirmasi, akses member akan aktif otomatis.</textarea></div>
                             <div class="form-group full"><label class="form-label">Pengingat Pending Order 2</label><textarea data-key="notif_reminder_wa_2" class="form-textarea" style="min-height: 170px;">🚀 *Akses Kakak Sudah Siap*
@@ -1032,16 +1167,16 @@ Tinggal satu langkah lagi untuk membuka akses ke *{produk}*.
 
 Yuk selesaikan pembayaran sebelum invoice direset otomatis oleh sistem.
 
-💳 *Selesaikan di sini:*
-{landing_url}
+Instruksi pembayaran:
+{instruksi_pembayaran}
 
 Ditunggu konfirmasinya ya Kak.</textarea></div>
                             <div class="form-group full"><label class="form-label">Email Pengingat Pending Order 2</label><textarea data-key="notif_reminder_email_2" class="form-textarea" style="min-height: 140px;">Halo {nama},
 
 Akses untuk {produk} sudah siap. Tinggal selesaikan pembayaran invoice #{invoice} sebesar {total}.
 
-Silakan lanjutkan pembayaran dari halaman berikut:
-{landing_url}</textarea></div>
+Instruksi pembayaran:
+{instruksi_pembayaran}</textarea></div>
                             <div class="form-group full"><label class="form-label">Pengingat Pending Order 3</label><textarea data-key="notif_reminder_wa_3" class="form-textarea" style="min-height: 170px;">⚠️ *Pengingat Terakhir*
 
 Halo Kak *{nama}*,
@@ -1055,16 +1190,16 @@ Invoice untuk *{produk}* masih berstatus *Pending* dan akan segera kedaluwarsa.
 
 Mohon selesaikan pembayaran hari ini agar pesanan Kakak tetap aktif.
 
-🌐 *Cek halaman produk:*
-{landing_url}
+Instruksi pembayaran:
+{instruksi_pembayaran}
 
 Terima kasih ya Kak. 🤝</textarea></div>
                             <div class="form-group full"><label class="form-label">Email Pengingat Pending Order 3</label><textarea data-key="notif_reminder_email_3" class="form-textarea" style="min-height: 150px;">Halo {nama},
 
 Ini pengingat terakhir untuk invoice #{invoice}. Pesanan {produk} masih berstatus pending dengan tagihan {total}.
 
-Mohon selesaikan pembayaran hari ini agar pesanan tetap aktif:
-{landing_url}</textarea></div>
+Instruksi pembayaran:
+{instruksi_pembayaran}</textarea></div>
                             <div class="form-group full"><label class="form-label">Pending Order Dibatalkan</label><textarea data-key="notif_reminder_wa_4" class="form-textarea" style="min-height: 170px;">❌ *Pesanan Dibatalkan Otomatis*
 
 Halo Kak *{nama}*,
@@ -1091,8 +1226,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                         </div>
                     </div>
 
-                    <div class="settings-card">
-                        <div class="settings-card">
+                    <div class="settings-card settings-section" data-settings-section="tracking">
                         <h3 class="settings-title"><i data-lucide="pie-chart"></i> Tracking & Analytics</h3>
                         <div class="form-grid">
                             <div class="form-group">
@@ -1105,6 +1239,8 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                             </div>
                         </div>
                     </div>
+
+                    <div class="settings-card settings-section" data-settings-section="api">
                         <h3 class="settings-title"><i data-lucide="cpu"></i> Integrasi API Lanjutan</h3>
                         <div class="form-grid">
                             <div class="form-group"><label class="form-label">Cloudflare Zone ID</label><input type="text" data-key="cf_zone_id" class="form-input" style="font-family: monospace;"></div>
@@ -1131,9 +1267,22 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                     <div class="form-group" style="margin: 0;"><label class="form-label">URL Slug (Permalink)</label><input type="text" id="pg-slug" class="form-input" style="font-family: monospace; color: var(--brand-blue);" required></div>
                 </div>
 
+                <div class="form-grid" style="margin-bottom: 1rem; border: 1px solid var(--slate-200); padding: 1rem; border-radius: 0.375rem; background: var(--slate-50);">
+                    <div class="form-group" style="margin: 0;"><label class="form-label">SEO Title</label><input type="text" id="pg-seo-title" class="form-input" maxlength="70" placeholder="Kosongkan untuk memakai judul halaman"></div>
+                    <div class="form-group" style="margin: 0;"><label class="form-label">SEO Keywords</label><input type="text" id="pg-seo-keywords" class="form-input" placeholder="keyword utama, keyword kedua"></div>
+                    <div class="form-group full" style="margin: 0;"><label class="form-label">Meta Description</label><textarea id="pg-seo-description" class="form-textarea" maxlength="180" style="min-height: 80px;" placeholder="Ringkasan singkat halaman untuk Google, Facebook, dan WhatsApp."></textarea></div>
+                    <div class="form-group full" style="margin: 0;">
+                        <label class="form-label">Gambar Share / OG Image</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="url" id="pg-seo-image" class="form-input" placeholder="URL gambar saat halaman dibagikan">
+                            <button type="button" onclick="triggerQuickUpload('pg-seo-image')" class="btn-outline" style="width: auto; padding: 0.5rem;" title="Upload Gambar"><i data-lucide="upload-cloud"></i></button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 1rem; border: 1px dashed #f43f5e; padding: 1rem; border-radius: 0.375rem; background: #fff1f2;">
                     <label class="form-label" style="color: #e11d48; font-weight: 800;"><i data-lucide="lock" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle; margin-right: 0.25rem;"></i> Kunci Halaman Khusus Member (Opsional)</label>
-                    <select id="pg-protect" class="form-input" style="border-color: #fda4af; background: white; font-weight: bold; color: #0f172a;"></select>
+                    <select id="pg-protect" class="form-input" multiple size="6" style="border-color: #fda4af; background: white; font-weight: bold; color: #0f172a;"></select>
                 </div>
                 
                 <div class="form-group">
@@ -1166,7 +1315,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                     <div class="form-group" style="margin: 0;"><label class="form-label">Tipe Diskon</label><select id="c-type" class="form-select"><option value="Persen">Persentase (%)</option><option value="Nominal">Nominal (Rp)</option></select></div>
                     <div class="form-group" style="margin: 0;"><label class="form-label">Nilai Potongan</label><input type="number" id="c-val" class="form-input" required></div>
                 </div>
-                <div class="form-group"><label class="form-label">Berlaku Untuk Produk</label><select id="c-products" class="form-select"></select></div>                
+                <div class="form-group"><label class="form-label">Berlaku Untuk Produk / Kategori</label><select id="c-products" class="form-select" multiple size="8"></select></div>
                 <div class="form-group"><label class="form-label">Status Kupon</label><select id="c-status" class="form-select"><option value="Active">Aktif</option><option value="Inactive">Nonaktif / Expired</option></select></div>
                 <div class="modal-footer"><button type="button" onclick="closeModal('modal-coupon')" class="btn-cancel">BATAL</button><button type="submit" class="btn-primary">Simpan Kupon</button></div>
             </form>
@@ -1246,11 +1395,11 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
 
     <div id="modal-import-products" class="modal-overlay hidden">
         <div class="modal-card xl">
-            <h3 class="modal-title">Import Produk Ebook</h3>
+            <h3 class="modal-title">Import Produk</h3>
             <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin: 0;"><label class="form-label">Prefix ID</label><input type="text" id="import-products-prefix" class="form-input" value="EBOOK"></div>
                 <div class="form-group" style="margin: 0;"><label class="form-label">Kategori Default</label><input type="text" id="import-products-category" class="form-input" value="Ebook"></div>
-                <div class="form-group" style="margin: 0;"><label class="form-label">Harga Default</label><input type="number" id="import-products-price" class="form-input" value="0"></div>
+                <div class="form-group" style="margin: 0;"><label class="form-label">Harga Jual Default</label><input type="number" id="import-products-price" class="form-input" value="0"></div>
                 <div class="form-group" style="margin: 0;"><label class="form-label">Komisi L1 Default (%)</label><input type="number" id="import-products-komisi" class="form-input" value="0"></div>
             </div>
             <div class="form-group">
@@ -1270,7 +1419,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             </div>
             <div class="form-group">
                 <label class="form-label">Data Produk</label>
-                <textarea id="import-products-raw" class="form-textarea custom-scroll" style="min-height: 260px; font-family: Consolas, monospace; font-size: 0.78rem;" placeholder="NAMA_PRODUK,LINK_DRIVE&#10;Judul Ebook,https://drive.google.com/file/d/FILE_ID/view"></textarea>
+                <textarea id="import-products-raw" class="form-textarea custom-scroll" style="min-height: 260px; font-family: Consolas, monospace; font-size: 0.78rem;" placeholder="ID_PRODUK,KOMISI,KOMISI_L2,KOMISI_L3,HARGA_CORET,HARGA,NAMA_PRODUK,KATEGORI,URL_GAMBAR,URL_LANDING_PAGE,URL_AKSES,PDF_DRIVE_ID,DESKRIPSI,BUMP_STATUS,BUMP_PRICE,BUMP_TITLE,BUMP_URL,BUMP_DESC,STATUS"></textarea>
             </div>
             <div id="import-products-preview" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 0.375rem; padding: 0.875rem 1rem; font-size: 0.8rem; font-weight: 800; color: var(--slate-600); margin-bottom: 1rem;">0 produk siap import</div>
             <div class="modal-footer">
@@ -1285,11 +1434,20 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         <div class="modal-card lg">
             <h3 class="modal-title">Setup Materi Kelas</h3>
             <form id="form-lms">
-                <div class="form-group"><label class="form-label">Pilih Produk</label><select id="lms-product-id" class="form-select" required></select></div>
+                <div class="form-grid" style="gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group" style="margin: 0;"><label class="form-label">Pilih Produk</label><select id="lms-product-id" class="form-select" multiple size="7"></select></div>
+                    <div class="form-group" style="margin: 0;"><label class="form-label">Atau Pilih Kategori</label><select id="lms-target-category" class="form-select"><option value="">-- Tanpa Target Kategori --</option></select></div>
+                </div>
                 
                 <div class="form-group">
                     <label class="form-label">Deskripsi Kelas</label>
                     <textarea id="lms-desc" class="form-textarea" placeholder="Deskripsi umum tentang materi LMS ini..." style="margin-bottom:1rem;"></textarea>
+                </div>
+
+                <div class="form-group" style="border: 1px dashed var(--brand-blue); padding: 1rem; border-radius: 0.375rem; background: var(--blue-50);">
+                    <label class="form-label">Import Video dari Playlist / Daftar URL YouTube</label>
+                    <textarea id="lms-playlist-source" class="form-textarea custom-scroll" style="min-height: 90px;" placeholder="Paste URL playlist YouTube atau daftar URL video, satu baris satu video."></textarea>
+                    <button type="button" onclick="importLmsPlaylist()" id="btn-import-playlist" class="btn-outline" style="margin-top: 0.75rem; color: var(--brand-blue); border-color: var(--blue-200);"><i data-lucide="youtube"></i> Ambil Video</button>
                 </div>
                 
                 <div style="border: 1px dashed var(--slate-300); padding: 1rem; border-radius: 0.375rem; background: var(--slate-50); margin-bottom: 1rem;">
@@ -1405,7 +1563,51 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         function toggleEmailFields() {
             const provider = document.querySelector('select[data-key="mail_provider"]');
             const apiBox = document.getElementById('email-api-box');
-            if(provider && apiBox) { if(provider.value === 'google') { apiBox.classList.add('hidden'); } else { apiBox.classList.remove('hidden'); } }
+            if(!provider || !apiBox) return;
+            const value = provider.value;
+            const apiUrlWrap = document.getElementById('mail-api-url-wrap');
+            const domainWrap = document.getElementById('mail-domain-wrap');
+            const usernameWrap = document.getElementById('mail-username-wrap');
+            const apiKeyWrap = document.getElementById('mail-api-key-wrap');
+            const listWrap = document.getElementById('mail-list-wrap');
+            const keyLabel = document.getElementById('mail-api-key-label');
+            const keyInput = document.querySelector('[data-key="mail_api_key"]');
+            const help = document.getElementById('email-provider-help');
+
+            apiBox.classList.remove('hidden');
+            if(apiUrlWrap) apiUrlWrap.classList.toggle('hidden', value !== 'google');
+            if(domainWrap) domainWrap.classList.toggle('hidden', value !== 'kirimemail');
+            if(usernameWrap) usernameWrap.classList.toggle('hidden', value !== 'kirimemail');
+            if(listWrap) listWrap.classList.toggle('hidden', value !== 'mailketing');
+
+            if(keyLabel && keyInput) {
+                if(value === 'google') {
+                    keyLabel.innerText = 'Token Rahasia Web App (Opsional)';
+                    keyInput.placeholder = 'Isi jika Apps Script memakai token validasi';
+                } else if(value === 'resend') {
+                    keyLabel.innerText = 'Resend API Key';
+                    keyInput.placeholder = 're_...';
+                } else if(value === 'mailketing') {
+                    keyLabel.innerText = 'Mailketing API Token';
+                    keyInput.placeholder = 'Token dari Mailketing';
+                } else if(value === 'kirimemail') {
+                    keyLabel.innerText = 'Kirim.Email API Key';
+                    keyInput.placeholder = 'API key dari dashboard Transactional Kirim.Email';
+                } else {
+                    keyLabel.innerText = 'API Key / Token';
+                    keyInput.placeholder = 'Token dari layanan email';
+                }
+            }
+
+            if(help) {
+                const helperText = {
+                    google: 'Gmail tidak bisa dikirim langsung via SMTP dari Cloudflare. Gunakan Google Apps Script Web App sebagai relay, lalu paste URL /exec di kolom URL Web App Gmail.',
+                    resend: 'Gunakan domain email yang sudah diverifikasi di Resend agar pengiriman stabil.',
+                    mailketing: 'ID List Autoresponder hanya dipakai untuk menambahkan subscriber otomatis.',
+                    kirimemail: 'Gunakan username dan API key dari Kirim.Email Transactional. Domain pengirim harus sudah verified di Kirim.Email.'
+                };
+                help.innerText = helperText[value] || '';
+            }
         }
 
         const adminPaymentChannels = {
@@ -1472,6 +1674,8 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         let IK_PUB = ''; let IK_END = ''; 
         let cachedPages = []; let cachedProducts = []; let cachedLms = []; let cachedCoupons = []; 
         let rawOrdersData = [];
+        let activeProductCategory = 'all';
+        let selectedProductIds = new Set();
 
         (function installAdminApiGuard() {
             const nativeFetch = window.fetch.bind(window);
@@ -1544,6 +1748,161 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             showToast('Proses Download CSV Berhasil!', 'success');
         }
 
+        let blastPreviewState = { total: 0, targetStatus: 'all' };
+
+        function escapeAdminHtml(value = '') {
+            return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[ch]));
+        }
+
+        function adminJsArg(value = '') {
+            return escapeAdminHtml(JSON.stringify(String(value ?? '')));
+        }
+
+        function getAdminApiUrl() {
+            return window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+        }
+
+        function getBlastPayloadBase() {
+            const limitRaw = Number(document.getElementById('blast-limit').value || 25);
+            const selectedProducts = getSelectedValues('blast-products').filter(value => value && value !== 'All');
+            return {
+                target_status: document.getElementById('blast-status').value,
+                product_ids: selectedProducts.join(','),
+                channel: document.getElementById('blast-channel').value,
+                limit: Math.min(50, Math.max(1, limitRaw)),
+                subject: document.getElementById('blast-subject').value,
+                message: document.getElementById('blast-message').value
+            };
+        }
+
+        function setBlastButtonsLoading(isLoading, label = 'Memproses...') {
+            ['btn-blast-preview', 'btn-blast-preview-top', 'btn-blast-send'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                if (isLoading) {
+                    if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
+                    btn.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> ${label}`;
+                    btn.disabled = true;
+                } else {
+                    if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+                    btn.disabled = false;
+                }
+            });
+            lucide.createIcons();
+        }
+
+        function renderBlastPreview(data) {
+            const box = document.getElementById('blast-summary');
+            if (!box) return;
+            blastPreviewState = { total: Number(data.total || 0), targetStatus: data.target_status || 'all' };
+            const samples = (data.sample || []).map(item => `
+                <div class="blast-sample-item">
+                    <div class="blast-sample-name">${escapeAdminHtml(item.nama || 'Tanpa Nama')} <span class="badge ${String(item.status || '').toLowerCase() === 'lunas' ? 'active' : 'warning'}">${escapeAdminHtml(item.status || '-')}</span></div>
+                    <div class="blast-sample-meta">${escapeAdminHtml(item.email || '-')} | ${escapeAdminHtml(item.whatsapp || '-')}</div>
+                    <div class="blast-sample-meta">${escapeAdminHtml(item.produk || '-')}</div>
+                </div>
+            `).join('');
+
+            box.innerHTML = `
+                <strong>${Number(data.total || 0).toLocaleString('id-ID')} target</strong> siap dikirim untuk ${escapeAdminHtml(data.label || 'target terpilih')}.
+                <div style="margin-top:0.4rem; font-size:0.75rem; font-weight:800; color:var(--slate-500);">WhatsApp tersedia: ${Number(data.wa_ready || 0).toLocaleString('id-ID')} | Email tersedia: ${Number(data.email_ready || 0).toLocaleString('id-ID')}</div>
+                ${samples ? `<div class="blast-sample-list">${samples}</div>` : ''}
+            `;
+            lucide.createIcons();
+        }
+
+        async function previewBlastTargets(showNotice = true) {
+            const targetUrl = getAdminApiUrl();
+            if (!targetUrl) return showToast('URL sistem belum terbaca.', 'error');
+            setBlastButtonsLoading(true, 'Mengecek...');
+            try {
+                const payload = Object.assign({ action: 'preview_blast_targets' }, getBlastPayloadBase());
+                const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error(data.message || 'Gagal cek target.');
+                renderBlastPreview(data);
+                if (showNotice) showToast('Target berhasil dicek.', 'success');
+                return data;
+            } catch (err) {
+                showToast(err.message || 'Gagal cek target.', 'error');
+                return null;
+            } finally {
+                setBlastButtonsLoading(false);
+            }
+        }
+
+        function updateBlastProgress(state) {
+            const box = document.getElementById('blast-progress');
+            if (!box) return;
+            box.classList.remove('hidden');
+            const total = Math.max(1, Number(state.total || 0));
+            const processed = Math.min(total, Number(state.processed || 0));
+            const pct = Math.min(100, Math.round((processed / total) * 100));
+            box.innerHTML = `
+                <div class="blast-progress-top">
+                    <span>${processed.toLocaleString('id-ID')} / ${Number(state.total || 0).toLocaleString('id-ID')} target</span>
+                    <span>${pct}%</span>
+                </div>
+                <div class="blast-bar"><div class="blast-bar-fill" style="width:${pct}%"></div></div>
+                <div class="blast-progress-meta">
+                    WhatsApp terkirim: ${Number(state.sentWa || 0).toLocaleString('id-ID')} | Email terkirim: ${Number(state.sentEmail || 0).toLocaleString('id-ID')} | Gagal: ${Number(state.failed || 0).toLocaleString('id-ID')}
+                </div>
+            `;
+        }
+
+        async function sendBlastMessages() {
+            const basePayload = getBlastPayloadBase();
+            const channel = String(basePayload.channel || 'both');
+            const message = String(basePayload.message || '').trim();
+            if (!message) return showToast('Isi pesan wajib diisi.', 'warning');
+            if (channel === 'email' || channel === 'both') {
+                const subject = String(basePayload.subject || '').trim();
+                if (!subject) return showToast('Subject email wajib diisi.', 'warning');
+            }
+
+            const preview = await previewBlastTargets(false);
+            if (!preview || Number(preview.total || 0) <= 0) return showToast('Target kosong.', 'warning');
+
+            const confirmSend = await customConfirm(`Kirim blast ke ${Number(preview.total || 0).toLocaleString('id-ID')} target ${preview.label || ''}?`, 'Kirim Blast');
+            if (!confirmSend) return;
+
+            const targetUrl = getAdminApiUrl();
+            if (!targetUrl) return showToast('URL sistem belum terbaca.', 'error');
+
+            let offset = 0;
+            let processed = 0;
+            let sentWa = 0;
+            let sentEmail = 0;
+            let failed = 0;
+            setBlastButtonsLoading(true, 'Mengirim...');
+            updateBlastProgress({ total: preview.total, processed: 0, sentWa, sentEmail, failed });
+
+            try {
+                while (processed < Number(preview.total || 0)) {
+                    const payload = Object.assign({ action: 'send_blast_batch', offset }, basePayload);
+                    const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (data.status !== 'success') throw new Error(data.message || 'Blast gagal dikirim.');
+
+                    processed += Number(data.processed || 0);
+                    sentWa += Number(data.sent_wa || 0);
+                    sentEmail += Number(data.sent_email || 0);
+                    failed += Number(data.failed || 0);
+                    offset = Number(data.next_offset || processed);
+                    updateBlastProgress({ total: data.total || preview.total, processed, sentWa, sentEmail, failed });
+
+                    if (data.done || Number(data.processed || 0) === 0) break;
+                    await new Promise(resolve => setTimeout(resolve, 700));
+                }
+
+                showToast('Blast selesai dikirim.', 'success');
+            } catch (err) {
+                showToast(err.message || 'Blast gagal dikirim.', 'error');
+            } finally {
+                setBlastButtonsLoading(false);
+            }
+        }
+
         function copyCheckoutLink(prodId) {
             const link = window.location.origin + '/checkout?id=' + prodId;
             const el = document.createElement('textarea');
@@ -1569,21 +1928,33 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         function renderPagesTable() {
             const tbody = document.getElementById('list-pages');
             if (!cachedPages || cachedPages.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--slate-400); font-style: italic;">Belum ada halaman CMS.</td></tr>`; return; }
-            tbody.innerHTML = cachedPages.map(p => {
-                return `<tr><td class="td-bold">${p[2]}</td><td style="font-family: monospace; color: var(--slate-500);">/${p[1]}</td><td><div class="action-btns"><button onclick="window.open('/${p[1]}', '_blank')" class="btn-icon" title="Preview"><i data-lucide="external-link"></i></button><button onclick="editPage('${p[0]}')" class="btn-icon" title="Edit Manual"><i data-lucide="edit"></i></button><button onclick="deletePage('${p[0]}')" class="btn-icon rose" title="Hapus"><i data-lucide="trash-2"></i></button></div></td></tr>`;
+            const pages = cachedPages;
+            tbody.innerHTML = pages.map(p => {
+                const slug = String(p[1] || '');
+                return `<tr><td class="td-bold">${escapeAdminHtml(p[2])}</td><td style="font-family: monospace; color: var(--slate-500);">/${escapeAdminHtml(slug)}</td><td><div class="action-btns"><button onclick="window.open(${adminJsArg('/' + slug)}, '_blank')" class="btn-icon" title="Preview"><i data-lucide="external-link"></i></button><button onclick="editPage(${adminJsArg(p[0])})" class="btn-icon" title="Edit Manual"><i data-lucide="edit"></i></button><button onclick="deletePage(${adminJsArg(p[0])})" class="btn-icon rose" title="Hapus"><i data-lucide="trash-2"></i></button></div></td></tr>`;
             }).join(''); lucide.createIcons();
         }
 
         function populateLmsDropdown() {
             const selectEl = document.getElementById('lms-product-id'); if(!selectEl) return;
-            let html = '<option value="">-- Pilih Produk Tujuan --</option>'; cachedProducts.forEach(p => { html += `<option value="${p[0]}">${p[0]} - ${p[1]}</option>`; }); selectEl.innerHTML = html;
+            selectEl.innerHTML = cachedProducts.map(p => `<option value="${escapeAdminHtml(p[0])}">${escapeAdminHtml(p[0])} - ${escapeAdminHtml(p[1])}</option>`).join('');
+            const categoryEl = document.getElementById('lms-target-category');
+            if (categoryEl) {
+                const categories = getUniqueValues(cachedProducts, getProductCategory);
+                categoryEl.innerHTML = '<option value="">-- Tanpa Target Kategori --</option>' + categories.map(cat => `<option value="${escapeAdminHtml(cat)}">Kategori: ${escapeAdminHtml(cat)}</option>`).join('');
+            }
         }
 
         function populateProtectDropdown() {
             const selectEl = document.getElementById('pg-protect'); if(!selectEl) return;
-            let html = '<option value="">-- Terbuka Untuk Umum (Tanpa Proteksi) --</option>'; 
-            cachedProducts.forEach(p => { html += `<option value="${p[0]}">🔒 Kunci Halaman untuk member: ${p[0]} - ${p[1]}</option>`; }); 
-            selectEl.innerHTML = html;
+            selectEl.innerHTML = cachedProducts.map(p => `<option value="${escapeAdminHtml(p[0])}">Kunci untuk member: ${escapeAdminHtml(p[0])} - ${escapeAdminHtml(p[1])}</option>`).join('');
+        }
+
+        function populateBlastProductDropdown() {
+            const selectEl = document.getElementById('blast-products'); if(!selectEl) return;
+            const current = getSelectedValues('blast-products');
+            selectEl.innerHTML = '<option value="All">Semua Produk</option>' + cachedProducts.map(p => `<option value="${escapeAdminHtml(p[0])}">${escapeAdminHtml(p[0])} - ${escapeAdminHtml(p[1])}</option>`).join('');
+            setSelectedValues('blast-products', current.length ? current.join(',') : 'All');
         }
 
         function parseOrderDate(value) {
@@ -1670,17 +2041,113 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             if (yearFoot) yearFoot.innerText = String(now.getFullYear());
         }
 
+        function getProductCategory(product) {
+            return String((product && (product.kategori || product[14])) || 'Umum').trim() || 'Umum';
+        }
+
+        function getUniqueValues(items, getter) {
+            return Array.from(new Set((items || []).map(getter).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+        }
+
+        function getSelectedValues(selectId) {
+            const el = document.getElementById(selectId);
+            if (!el) return [];
+            return Array.from(el.selectedOptions || []).map(opt => opt.value).filter(Boolean);
+        }
+
+        function setSelectedValues(selectId, values) {
+            const el = document.getElementById(selectId);
+            if (!el) return;
+            const selected = new Set(String(values || '').split(',').map(v => v.trim()).filter(Boolean));
+            Array.from(el.options || []).forEach(opt => { opt.selected = selected.has(opt.value); });
+        }
+
+        function renderCategoryFilter(containerId, categories, activeValue, handlerName) {
+            const target = document.getElementById(containerId);
+            if (!target) return;
+            const items = ['all'].concat(categories || []);
+            target.innerHTML = items.map(cat => {
+                const isAll = cat === 'all';
+                const label = isAll ? 'Semua' : cat;
+                const active = activeValue === cat || (isAll && activeValue === 'all');
+                return `<button type="button" onclick="${handlerName}(${adminJsArg(cat)})" class="blast-token" style="cursor:pointer; ${active ? 'background: var(--brand-blue); color: white; border-color: var(--brand-blue);' : ''}">${escapeAdminHtml(label)}</button>`;
+            }).join('');
+        }
+
+        function renderProductCategoryFilter() {
+            const categories = getUniqueValues(cachedProducts, getProductCategory);
+            if (activeProductCategory !== 'all' && !categories.includes(activeProductCategory)) activeProductCategory = 'all';
+            renderCategoryFilter('product-category-filter', categories, activeProductCategory, 'setProductCategoryFilter');
+        }
+
+        function setProductCategoryFilter(category) {
+            activeProductCategory = category || 'all';
+            renderProductsGrid();
+        }
+
+        function updateSelectedProductsButton() {
+            const btn = document.getElementById('btn-delete-selected-products');
+            if (!btn) return;
+            const total = selectedProductIds.size;
+            btn.style.display = total ? 'inline-flex' : 'none';
+            btn.innerHTML = `<i data-lucide="trash-2"></i> Hapus Terpilih (${total})`;
+            if (typeof lucide !== 'undefined') lucide.createIcons({ root: btn });
+        }
+
+        function toggleProductSelection(id, checked) {
+            if (checked) selectedProductIds.add(id);
+            else selectedProductIds.delete(id);
+            updateSelectedProductsButton();
+        }
+
+        function renderProductsGrid() {
+            renderProductCategoryFilter();
+            const listEl = document.getElementById('list-products');
+            if (!listEl) return;
+            const products = [...cachedProducts].reverse().filter(p => activeProductCategory === 'all' || getProductCategory(p) === activeProductCategory);
+            if (!products.length) {
+                listEl.innerHTML = `<div class="settings-card" style="grid-column: 1 / -1; text-align:center; color: var(--slate-400); font-weight: 700;">Belum ada produk pada kategori ini.</div>`;
+                updateSelectedProductsButton();
+                return;
+            }
+            listEl.innerHTML = products.map(p => {
+                const isActive = p[5] !== 'Inactive';
+                const id = String(p[0] || '');
+                const category = getProductCategory(p);
+                const statusBadge = isActive ? `<span class="badge active">Aktif</span>` : `<span class="badge inactive">Nonaktif</span>`;
+                const toggleBtnClass = isActive ? `btn-prod-toggle active` : `btn-prod-toggle inactive`;
+                const toggleBtnIcon = isActive ? `eye-off` : `eye`;
+                const toggleBtnText = isActive ? `Nonaktif` : `Aktifkan`;
+                const toggleBtnAction = isActive ? `Inactive` : `Active`;
+                return `<div class="prod-card ${!isActive ? 'inactive' : ''}" style="position: relative;">
+                    <label title="Pilih produk" style="position:absolute; top:0.75rem; right:0.75rem; z-index:2; background:white; border:1px solid var(--slate-200); border-radius:0.375rem; padding:0.35rem; display:flex; align-items:center;">
+                        <input type="checkbox" class="form-checkbox" onchange="toggleProductSelection(${adminJsArg(id)}, this.checked)" ${selectedProductIds.has(id) ? 'checked' : ''}>
+                    </label>
+                    <div class="prod-header" style="padding-right: 2.2rem;"><div class="prod-id-wrap"><span class="prod-id">${escapeAdminHtml(id)}</span> ${statusBadge} <button type="button" onclick="setProductCategoryFilter(${adminJsArg(category)})" class="badge" style="background: var(--blue-50); color: var(--brand-blue); border: 1px solid var(--blue-100); margin-left: 0.25rem; cursor:pointer;">${escapeAdminHtml(category)}</button></div><span class="prod-price">Rp ${Number(p[4]).toLocaleString('id-ID')}</span></div>
+                    <h4 class="prod-title">${escapeAdminHtml(p[1])}</h4>
+                    <p class="prod-desc">${escapeAdminHtml(p[2] || '-')}</p>
+                    <div class="prod-actions"><button onclick="copyCheckoutLink(${adminJsArg(id)})" class="btn-prod"><i data-lucide="link"></i> Link</button><button onclick="editProd(${adminJsArg(id)})" class="btn-prod"><i data-lucide="edit"></i> Edit</button><button onclick="toggleProductStatus(${adminJsArg(id)}, ${adminJsArg(toggleBtnAction)})" class="btn-prod ${toggleBtnClass}"><i data-lucide="${toggleBtnIcon}"></i> ${toggleBtnText}</button><button onclick="hapusProduk(${adminJsArg(id)})" class="btn-prod" style="color: var(--rose-500); border-color: #fecdd3;"><i data-lucide="trash-2"></i> Hapus</button></div>
+                </div>`;
+            }).join('');
+            updateSelectedProductsButton();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
         function renderAdminUI(r) {
             cachedPages = r.pages || []; cachedProducts = r.products || []; cachedLms = r.lms || []; cachedCoupons = r.coupons || []; rawOrdersData = r.orders || []; 
             populateLmsDropdown();
             populateProtectDropdown(); 
+            populateBlastProductDropdown();
             const bumpDrop = document.getElementById('p-bump-select'); 
             if (bumpDrop) {
                 bumpDrop.innerHTML = '<option value="">-- Pilih Katalog --</option>' + cachedProducts.map(p => `<option value="${p[3] || ''}">${p[1]}</option>`).join('');
             }
             const couponDrop = document.getElementById('c-products');
             if (couponDrop) {
-                couponDrop.innerHTML = '<option value="">-- Berlaku Untuk Semua Produk --</option>' + cachedProducts.map(p => `<option value="${p[0]}">${p[0]} - ${p[1]}</option>`).join('');
+                const categories = getUniqueValues(cachedProducts, getProductCategory);
+                couponDrop.innerHTML = '<option value="All">Semua Produk</option>' +
+                    categories.map(cat => `<option value="CAT:${escapeAdminHtml(cat)}">Kategori: ${escapeAdminHtml(cat)}</option>`).join('') +
+                    cachedProducts.map(p => `<option value="${escapeAdminHtml(p[0])}">${escapeAdminHtml(p[0])} - ${escapeAdminHtml(p[1])}</option>`).join('');
             }
             document.getElementById('stat-orders').innerText = (r.stats.orders || 0); 
             document.getElementById('stat-rev').innerText = 'Rp ' + Number(r.stats.rev || 0).toLocaleString('id-ID');
@@ -1692,15 +2159,21 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             
             const listOrders = document.getElementById('list-orders');
             if(r.orders.length === 0) { listOrders.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400); font-style: italic;">Belum ada pesanan masuk.</td></tr>`; } else {
-                listOrders.innerHTML = r.orders.map(o => `<tr><td class="td-mono">${o[0]}</td><td class="td-bold">${o[2]} <span class="td-sub">${o[1]}</span></td><td style="font-weight: 700; color: var(--slate-600); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${o[5]}</td><td class="td-bold" style="color: var(--slate-800); white-space: nowrap;">${formatRupiah(parseOrderAmount(o[6]))}</td><td style="font-weight: 700; color: var(--slate-500); white-space: nowrap;">${formatTransactionDate(o[8])}</td><td><span class="badge ${o[7]==='Lunas'?'active':'warning'}">${o[7]}</span></td><td>${o[7]==='Pending'?`<button onclick="setLunas('${o[0]}')" style="color: var(--brand-blue); font-weight: 900; text-transform: uppercase; font-size: 0.625rem; text-decoration: underline;">Aktifkan</button>`:'-'}</td></tr>`).join('');
+                listOrders.innerHTML = r.orders.map(o => {
+                    const invoice = String(o[0] || '');
+                    const status = String(o[7] || '');
+                    const customerName = String(o[2] || '-');
+                    const customerEmail = String(o[1] || '-');
+                    const customerWa = String(o[3] || '').trim();
+                    const customerWaLine = customerWa ? `<span class="td-sub td-wa">WA: ${escapeAdminHtml(customerWa)}</span>` : `<span class="td-sub td-wa muted">WA: -</span>`;
+                    const activateBtn = status === 'Pending' ? `<button onclick="setLunas(${adminJsArg(invoice)})" class="btn-icon amber" title="Aktifkan Order"><i data-lucide="check"></i></button>` : '';
+                    return `<tr><td class="td-mono">${escapeAdminHtml(invoice)}</td><td class="td-bold">${escapeAdminHtml(customerName)} <span class="td-sub">${escapeAdminHtml(customerEmail)}</span>${customerWaLine}</td><td style="font-weight: 700; color: var(--slate-600); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeAdminHtml(o[5])}</td><td class="td-bold" style="color: var(--slate-800); white-space: nowrap;">${formatRupiah(parseOrderAmount(o[6]))}</td><td style="font-weight: 700; color: var(--slate-500); white-space: nowrap;">${escapeAdminHtml(formatTransactionDate(o[8]))}</td><td><span class="badge ${status === 'Lunas' ? 'active' : 'warning'}">${escapeAdminHtml(status)}</span></td><td><div class="action-btns">${activateBtn}<button onclick="deleteOrder(${adminJsArg(invoice)})" class="btn-icon rose" title="Hapus Order"><i data-lucide="trash-2"></i></button></div></td></tr>`;
+                }).join('');
+                lucide.createIcons();
             }
             
-            document.getElementById('list-products').innerHTML = [...cachedProducts].reverse().map(p => {
-                const isActive = p[5] !== 'Inactive'; 
-                const statusBadge = isActive ? `<span class="badge active">Aktif</span>` : `<span class="badge inactive">Nonaktif</span>`;
-                const toggleBtnClass = isActive ? `btn-prod-toggle active` : `btn-prod-toggle inactive`; const toggleBtnIcon = isActive ? `eye-off` : `eye`; const toggleBtnText = isActive ? `Nonaktif` : `Aktifkan`; const toggleBtnAction = isActive ? `Inactive` : `Active`;
-                return `<div class="prod-card ${!isActive ? 'inactive' : ''}"><div class="prod-header"><div class="prod-id-wrap"><span class="prod-id">${p[0]}</span> ${statusBadge} <span class="badge" style="background: var(--blue-50); color: var(--brand-blue); border: 1px solid var(--blue-100); margin-left: 0.25rem;">${p[14] || 'Umum'}</span></div><span class="prod-price">Rp ${Number(p[4]).toLocaleString('id-ID')}</span></div><h4 class="prod-title">${p[1]}</h4><p class="prod-desc">${p[2]||'-'}</p><div class="prod-actions"><button onclick="copyCheckoutLink('${p[0]}')" class="btn-prod"><i data-lucide="link"></i> Link</button><button onclick="editProd('${p[0]}')" class="btn-prod"><i data-lucide="edit"></i> Edit</button><button onclick="toggleProductStatus('${p[0]}', '${toggleBtnAction}')" class="btn-prod ${toggleBtnClass}"><i data-lucide="${toggleBtnIcon}"></i> ${toggleBtnText}</button><button onclick="hapusProduk('${p[0]}')" class="btn-prod" style="color: var(--rose-500); border-color: #fecdd3;"><i data-lucide="trash-2"></i> Hapus</button></div></div>`;
-            }).join('');
+            selectedProductIds = new Set(Array.from(selectedProductIds).filter(id => cachedProducts.some(p => String(p[0]) === id)));
+            renderProductsGrid();
             
             renderPagesTable();
             
@@ -1710,7 +2183,9 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             const tbodyL = document.getElementById('list-lms');
             tbodyL.innerHTML = cachedLms.map(l => {
                 let vCount = 0; try { vCount = JSON.parse(l[1]).length; } catch(e){}
-                return `<tr><td class="td-mono">${l[0]}</td><td class="td-bold" style="color: var(--slate-600);">${vCount} Video Topik</td><td><div class="action-btns"><button onclick="copyLmsLink('${l[0]}')" class="btn-icon" title="Copy Link Akses LMS"><i data-lucide="link"></i></button><button onclick="editLms('${l[0]}')" class="btn-icon amber" title="Edit Materi"><i data-lucide="edit"></i></button></div></td></tr>`;
+                const targetText = l[9] ? `Kategori: ${l[9]}` : (l[8] || l[0]);
+                const firstTarget = String(l[8] || l[0]).split(',')[0].trim();
+                return `<tr><td class="td-mono">${escapeAdminHtml(targetText)}</td><td class="td-bold" style="color: var(--slate-600);">${vCount} Video Topik</td><td><div class="action-btns"><button onclick="copyLmsLink(${adminJsArg(firstTarget)})" class="btn-icon" title="Copy Link Akses LMS"><i data-lucide="link"></i></button><button onclick="editLms(${adminJsArg(l[0])})" class="btn-icon amber" title="Edit Materi"><i data-lucide="edit"></i></button></div></td></tr>`;
             }).join('');
             
             const tbodyA = document.getElementById('list-affiliates');
@@ -1771,7 +2246,9 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
 
         async function toggleProductStatus(id, newStatus) {
             const p = cachedProducts.find(x => x[0] === id); if(!p) return;
-            const msg = newStatus === 'Active' ? 'Aktifkan kembali produk ini?' : 'Nonaktifkan produk ini?';
+            const msg = newStatus === 'Active'
+                ? 'Aktifkan kembali produk ini agar tampil di katalog dan bisa dibeli?'
+                : 'Nonaktifkan produk ini? Produk akan hilang dari katalog dan checkout tidak bisa dipakai, tetapi pembeli lama tetap bisa mengaksesnya di member area.';
             const isConfirmed = await customConfirm(msg, 'Ubah Status Produk'); if(!isConfirmed) return; showToast('Memproses...', 'warning');
             const payload = { action: 'save_product', id: p[0], title: p[1], desc: p[2], url: p[3], harga: p[4], status: newStatus, lp_url: p[6] || "", komisi: p[7] || "0", komisi_l2: p[17] || "0", komisi_l3: p[18] || "0", bump_status: p[8] || "Inactive", bump_title: p[9] || "", bump_price: p[10] || 0, bump_desc: p[11] || "", bump_url: p[12] || "", gambar: p[13] || "", kategori: p[14] || "Umum", harga_coret: p[15] || "", pdf_drive_id: p[16] || "", is_edit: true };
             try {
@@ -1789,6 +2266,26 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                 const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete_product', id: id }) });
                 const text = await res.text(); let data; try { data = JSON.parse(text); } catch(err) { throw new Error('Format error'); }
                 if(data.status === 'success') { showToast('Produk dihapus!', 'success'); forceSync(true); } else { showToast('Gagal menghapus.', 'error'); }
+            } catch(err) { showToast('Koneksi terputus.', 'error'); }
+        }
+
+        async function deleteSelectedProducts() {
+            const ids = Array.from(selectedProductIds);
+            if (!ids.length) return showToast('Pilih produk yang ingin dihapus.', 'warning');
+            const isConfirmed = await customConfirm(`Hapus ${ids.length} produk terpilih?`, 'Hapus Massal Produk');
+            if(!isConfirmed) return;
+            showToast('Menghapus produk terpilih...', 'warning');
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'bulk_delete_products', ids }) });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    selectedProductIds.clear();
+                    showToast(`${data.deleted || 0} produk dihapus.`, 'success');
+                    forceSync(true);
+                } else {
+                    showToast(data.message || 'Gagal menghapus produk.', 'error');
+                }
             } catch(err) { showToast('Koneksi terputus.', 'error'); }
         }
 
@@ -1848,6 +2345,107 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             });
         }
 
+        function cmsFileBaseName(fileName = '') {
+            return String(fileName || 'halaman-baru')
+                .replace(/\.[^/.]+$/, '')
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim() || 'halaman-baru';
+        }
+
+        function cmsTitleFromFileName(fileName = '') {
+            const base = cmsFileBaseName(fileName);
+            return base.replace(/\b\w/g, ch => ch.toUpperCase());
+        }
+
+        function makeUniquePageSlug(slug) {
+            const base = makePageSlug(slug) || 'halaman-baru';
+            const existingSlugs = new Set((cachedPages || []).map(page => String(page[1] || '').toLowerCase()));
+            let nextSlug = base;
+            let counter = 2;
+            while(existingSlugs.has(nextSlug.toLowerCase())) {
+                nextSlug = `${base}-${counter}`;
+                counter += 1;
+            }
+            return nextSlug;
+        }
+
+        function stripHtmlForSeo(value = '') {
+            const holder = document.createElement('div');
+            holder.innerHTML = String(value || '');
+            return (holder.textContent || holder.innerText || '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function extractCmsHtmlContent(rawHtml = '') {
+            const source = String(rawHtml || '').trim();
+            if(!source) return '';
+            try {
+                const doc = new DOMParser().parseFromString(source, 'text/html');
+                const headAssets = Array.from(doc.head ? doc.head.querySelectorAll('style, link[rel="stylesheet"]') : [])
+                    .map(el => el.outerHTML)
+                    .join('\n');
+                const bodyHtml = doc.body ? doc.body.innerHTML.trim() : '';
+                return [headAssets, bodyHtml || source].filter(Boolean).join('\n').trim();
+            } catch(err) {
+                return source;
+            }
+        }
+
+        function extractCmsHtmlMeta(rawHtml = '', fallbackTitle = '') {
+            const fallbackDesc = stripHtmlForSeo(rawHtml).slice(0, 180);
+            const meta = {
+                seoTitle: fallbackTitle,
+                seoDescription: fallbackDesc,
+                seoKeywords: '',
+                seoImage: ''
+            };
+            try {
+                const doc = new DOMParser().parseFromString(String(rawHtml || ''), 'text/html');
+                const readMeta = (selector) => doc.querySelector(selector)?.getAttribute('content')?.trim() || '';
+                const title = doc.querySelector('title')?.textContent?.trim();
+                meta.seoTitle = title || fallbackTitle;
+                meta.seoDescription = readMeta('meta[name="description"]') || readMeta('meta[property="og:description"]') || fallbackDesc;
+                meta.seoKeywords = readMeta('meta[name="keywords"]');
+                meta.seoImage = readMeta('meta[property="og:image"]') || readMeta('meta[name="twitter:image"]');
+            } catch(err) {}
+            return meta;
+        }
+
+        async function handleCmsHtmlUpload(event) {
+            const input = event.target;
+            const file = input.files && input.files[0];
+            if(!file) return;
+            if(!/\.html?$/i.test(file.name || '')) {
+                showToast('Pilih file HTML dengan ekstensi .html atau .htm.', 'warning');
+                input.value = '';
+                return;
+            }
+
+            try {
+                const rawHtml = await file.text();
+                const fileTitle = cmsTitleFromFileName(file.name);
+                const slug = makeUniquePageSlug(cmsFileBaseName(file.name));
+                const meta = extractCmsHtmlMeta(rawHtml, fileTitle);
+
+                openPageModal();
+                document.getElementById('pg-title').value = fileTitle;
+                document.getElementById('pg-slug').value = slug;
+                document.getElementById('pg-slug').dataset.manual = 'true';
+                document.getElementById('pg-content').value = extractCmsHtmlContent(rawHtml);
+                document.getElementById('pg-seo-title').value = meta.seoTitle || fileTitle;
+                document.getElementById('pg-seo-description').value = meta.seoDescription || '';
+                document.getElementById('pg-seo-keywords').value = meta.seoKeywords || '';
+                document.getElementById('pg-seo-image').value = meta.seoImage || '';
+                showToast(`File ${file.name} siap dipublish sebagai /${slug}`, 'success');
+            } catch(err) {
+                showToast('Gagal membaca file HTML.', 'error');
+            } finally {
+                input.value = '';
+            }
+        }
+
         function editPage(id) { 
             const p = cachedPages.find(x => x[0] === id); if(!p) return; 
             bindPageSlugAuto();
@@ -1855,9 +2453,9 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             document.getElementById('pg-slug').value = p[1]; 
             document.getElementById('pg-slug').dataset.manual = 'true';
             document.getElementById('pg-title').value = p[2]; 
-            
+
             let content = p[3];
-            let protectVal = "";
+            let protectVal = p[11] || "";
             
             try {
                 const parser = new DOMParser();
@@ -1872,15 +2470,19 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             content = content.replace(/\[PROTECT:.*?\]/gi, ''); 
             
             document.getElementById('pg-content').value = content; 
-            document.getElementById('pg-protect').value = protectVal;
+            setSelectedValues('pg-protect', protectVal);
+            document.getElementById('pg-seo-title').value = p[6] || "";
+            document.getElementById('pg-seo-description').value = p[7] || "";
+            document.getElementById('pg-seo-keywords').value = p[8] || "";
+            document.getElementById('pg-seo-image').value = p[9] || "";
             document.getElementById('pg-is-edit').value = 'true'; 
             document.getElementById('modal-page').classList.remove('hidden'); 
         }
 
-        function openCouponModal() { document.getElementById('form-coupon').reset(); document.getElementById('c-is-edit').value = 'false'; document.getElementById('modal-coupon').classList.remove('hidden'); }
+        function openCouponModal() { document.getElementById('form-coupon').reset(); document.getElementById('c-is-edit').value = 'false'; setSelectedValues('c-products', 'All'); document.getElementById('modal-coupon').classList.remove('hidden'); }
         function editCoupon(code) { 
             const c = cachedCoupons.find(x => x[0] === code); if(!c) return; 
-            document.getElementById('c-code').value = c[0]; document.getElementById('c-type').value = c[1]; document.getElementById('c-val').value = c[2]; document.getElementById('c-status').value = c[3]; document.getElementById('c-products').value = c[4] || ""; document.getElementById('c-old-code').value = c[0]; document.getElementById('c-is-edit').value = 'true'; document.getElementById('modal-coupon').classList.remove('hidden'); 
+            document.getElementById('c-code').value = c[0]; document.getElementById('c-type').value = c[1]; document.getElementById('c-val').value = c[2]; document.getElementById('c-status').value = c[3]; setSelectedValues('c-products', c[4] || "All"); document.getElementById('c-old-code').value = c[0]; document.getElementById('c-is-edit').value = 'true'; document.getElementById('modal-coupon').classList.remove('hidden');
         }
         async function deleteCoupon(code) {
             const isConfirmed = await customConfirm('Kupon ini akan dihapus permanen.', 'Hapus Kupon'); if (!isConfirmed) return;
@@ -1894,7 +2496,8 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         document.getElementById('form-coupon').onsubmit = async (e) => { 
             e.preventDefault(); const form = document.getElementById('form-coupon'); const btn = form.querySelector('button[type="submit"]'); const oriText = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width: 1rem;"></i> PROSES...'; btn.disabled = true; lucide.createIcons();
-            const p = { action: 'save_coupon', code: document.getElementById('c-code').value, type: document.getElementById('c-type').value, val: document.getElementById('c-val').value, status: document.getElementById('c-status').value, products: document.getElementById('c-products').value, old_code: document.getElementById('c-old-code').value, is_edit: document.getElementById('c-is-edit').value === 'true' }; 
+            const couponTargets = getSelectedValues('c-products');
+            const p = { action: 'save_coupon', code: document.getElementById('c-code').value, type: document.getElementById('c-type').value, val: document.getElementById('c-val').value, status: document.getElementById('c-status').value, products: couponTargets.length ? couponTargets.join(',') : 'All', old_code: document.getElementById('c-old-code').value, is_edit: document.getElementById('c-is-edit').value === 'true' };
             try {
                 const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
                 const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p) }); const text = await res.text(); let data; try { data = JSON.parse(text); } catch(err) { throw new Error('Format error'); }
@@ -1928,12 +2531,14 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         
         // FIX: LMS Logic
-        function openLmsModal() { document.getElementById('form-lms').reset(); const container = document.getElementById('video-list-container'); container.innerHTML = ''; addVideoInput(); document.getElementById('modal-lms').classList.remove('hidden'); }
+        function openLmsModal() { document.getElementById('form-lms').reset(); setSelectedValues('lms-product-id', ''); const cat = document.getElementById('lms-target-category'); if(cat) cat.value = ''; const container = document.getElementById('video-list-container'); container.innerHTML = ''; addVideoInput(); document.getElementById('modal-lms').classList.remove('hidden'); }
 
         function editLms(p_id) {
             const lms = cachedLms.find(x => x[0] === p_id); if (!lms) { showToast('Data kelas tidak ditemukan.', 'error'); return; }
             document.getElementById('form-lms').reset(); 
-            document.getElementById('lms-product-id').value = lms[0];
+            const lmsProductTargets = lms[9] ? '' : (lms[8] || lms[0]);
+            setSelectedValues('lms-product-id', lmsProductTargets);
+            const cat = document.getElementById('lms-target-category'); if(cat) cat.value = lms[9] || '';
             document.getElementById('lms-desc').value = lms[2] || '';
             document.getElementById('lms-cert-leader1').value = lms[3] || '';
             document.getElementById('lms-cert-role1').value = lms[4] || '';
@@ -1949,8 +2554,35 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         function addVideoInput(title = '', id = '', desc = '') {
             const container = document.getElementById('video-list-container'); const div = document.createElement('div');
             div.style.cssText = 'background: white; border: 1px solid var(--slate-200); padding: 1rem; border-radius: 0.375rem; position: relative;'; div.className = 'video-item';
-            div.innerHTML = `<button type="button" onclick="this.parentElement.remove()" class="btn-icon rose" style="position: absolute; top: 0.5rem; right: 0.5rem; border:none; background:transparent;"><i data-lucide="trash-2"></i></button><input type="text" placeholder="Judul Video" class="form-input vid-title" style="margin-bottom: 0.5rem; padding-right: 2.5rem;" value="${title}" required><input type="text" placeholder="ID YouTube" class="form-input vid-id" style="background: var(--slate-50); font-family: monospace; margin-bottom: 0.5rem;" value="${id}" required><textarea placeholder="Deskripsi materi video..." class="form-textarea custom-scroll vid-desc" style="min-height: 60px;">${desc}</textarea>`;
+            div.innerHTML = `<button type="button" onclick="this.parentElement.remove()" class="btn-icon rose" style="position: absolute; top: 0.5rem; right: 0.5rem; border:none; background:transparent;"><i data-lucide="trash-2"></i></button><input type="text" placeholder="Judul Video" class="form-input vid-title" style="margin-bottom: 0.5rem; padding-right: 2.5rem;" value="${escapeAdminHtml(title)}" required><input type="text" placeholder="ID YouTube" class="form-input vid-id" style="background: var(--slate-50); font-family: monospace; margin-bottom: 0.5rem;" value="${escapeAdminHtml(id)}" required><textarea placeholder="Deskripsi materi video..." class="form-textarea custom-scroll vid-desc" style="min-height: 60px;">${escapeAdminHtml(desc)}</textarea>`;
             container.appendChild(div); lucide.createIcons(); container.scrollTop = container.scrollHeight;
+        }
+
+        async function importLmsPlaylist() {
+            const sourceEl = document.getElementById('lms-playlist-source');
+            const btn = document.getElementById('btn-import-playlist');
+            const source = sourceEl ? sourceEl.value.trim() : '';
+            if (!source) return showToast('Isi URL playlist atau daftar URL video.', 'warning');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width: 1rem;"></i> Mengambil...';
+            lucide.createIcons();
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import_youtube_playlist', playlist_url: source }) });
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error(data.message || 'Playlist tidak terbaca.');
+                const container = document.getElementById('video-list-container');
+                container.innerHTML = '';
+                (data.videos || []).forEach(video => addVideoInput(video.title || '', video.id || '', video.desc || ''));
+                showToast(`${(data.videos || []).length} video berhasil dimasukkan.`, 'success');
+            } catch(err) {
+                showToast(err.message || 'Gagal mengambil playlist.', 'error');
+            } finally {
+                btn.innerHTML = original;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
         }
 
         document.getElementById('form-lms').onsubmit = async (e) => {
@@ -1959,10 +2591,15 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             const videoItems = document.querySelectorAll('.video-item'); const videosArray = [];
             videoItems.forEach(item => { const title = item.querySelector('.vid-title').value; const vidId = item.querySelector('.vid-id').value; const desc = item.querySelector('.vid-desc').value; if(title && vidId) videosArray.push({ title, id: vidId, desc: desc }); });
             if (videosArray.length === 0) { showToast('Minimal 1 video!', 'warning'); btn.innerHTML = originalText; btn.disabled = false; return; }
+            const selectedProducts = getSelectedValues('lms-product-id');
+            const targetCategory = document.getElementById('lms-target-category')?.value || '';
+            if (selectedProducts.length === 0 && !targetCategory) { showToast('Pilih minimal 1 produk atau 1 kategori.', 'warning'); btn.innerHTML = originalText; btn.disabled = false; return; }
             
             const payload = { 
                 action: 'save_lms_materi', 
-                product_id: document.getElementById('lms-product-id').value, 
+                product_id: selectedProducts[0] || ('CAT:' + targetCategory),
+                product_ids: selectedProducts.join(','),
+                target_category: targetCategory,
                 videos: JSON.stringify(videosArray),
                 desc: document.getElementById('lms-desc').value,
                 cert_leader1: document.getElementById('lms-cert-leader1').value,
@@ -1980,6 +2617,27 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         };
 
         // UI Tabs & Nav
+        function switchSettingsSection(sectionKey, shouldScroll = true) {
+            const targetKey = document.querySelector(`[data-settings-section="${sectionKey}"]`) ? sectionKey : 'general';
+            document.querySelectorAll('[data-settings-section]').forEach(section => {
+                section.classList.toggle('active', section.getAttribute('data-settings-section') === targetKey);
+            });
+            document.querySelectorAll('[data-settings-nav]').forEach(button => {
+                const isActive = button.getAttribute('data-settings-nav') === targetKey;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-selected', String(isActive));
+            });
+
+            const headerActions = document.getElementById('header-settings-actions');
+            if (headerActions) headerActions.classList.toggle('hidden', targetKey === 'security');
+
+            if (shouldScroll) {
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            lucide.createIcons();
+        }
+
         function switchTab(t) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
@@ -1988,10 +2646,14 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             
             let titleText = t.charAt(0).toUpperCase() + t.slice(1);
             if (t === 'orders') titleText = `Halo, ${sessionStorage.getItem('adm_name') || 'Admin'} 👨‍💻`; 
-            else { if (t === 'lms') titleText = 'LMS Creator'; if (t === 'affiliate') titleText = 'Komisi Affiliate'; if (t === 'coupons') titleText = 'Manajemen Kupon'; if (t === 'settings') titleText = 'Pengaturan Master'; }
+            else { if (t === 'blast') titleText = 'Blast Pesan'; if (t === 'lms') titleText = 'LMS Creator'; if (t === 'affiliate') titleText = 'Komisi Affiliate'; if (t === 'coupons') titleText = 'Manajemen Kupon'; if (t === 'settings') titleText = 'Pengaturan Master'; }
             
             const topHeader = document.querySelector('.top-header');
             if (topHeader) topHeader.classList.toggle('settings-active', t === 'settings');
+            if (t === 'settings') {
+                const activeSettingsNav = document.querySelector('[data-settings-nav].active');
+                switchSettingsSection(activeSettingsNav ? activeSettingsNav.getAttribute('data-settings-nav') : 'general', false);
+            }
             document.querySelector('.header-title').innerHTML = titleText; 
             lucide.createIcons(); 
             if(window.innerWidth < 768) toggleSidebar(); 
@@ -2000,6 +2662,19 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
         async function setLunas(id) { 
             const isConfirmed = await customConfirm('Aktifkan akses materi untuk user ini?', 'Aktivasi Order'); if(!isConfirmed) return; showToast('Memproses...', 'warning');
             try { const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null); await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'update_order_status', id }) }); showToast('Sukses diaktifkan!', 'success'); forceSync(); } catch(e) { showToast('Gagal server.', 'error'); }
+        }
+
+        async function deleteOrder(invoice) {
+            const isConfirmed = await customConfirm(`Hapus data order ${invoice}? Tindakan ini tidak bisa dibatalkan.`, 'Hapus Order');
+            if(!isConfirmed) return;
+            showToast('Menghapus order...', 'warning');
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete_order', invoice }) });
+                const data = await res.json();
+                if(data.status === 'success') { showToast('Order berhasil dihapus.', 'success'); forceSync(true); }
+                else { showToast(data.message || 'Gagal menghapus order.', 'error'); }
+            } catch(e) { showToast('Koneksi terputus.', 'error'); }
         }
 
         function openProdModal() { 
@@ -2024,7 +2699,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             document.getElementById('form-page').reset(); 
             document.getElementById('pg-is-edit').value = 'false'; 
             document.getElementById('pg-slug').dataset.manual = 'false';
-            document.getElementById('pg-protect').value = ''; 
+            setSelectedValues('pg-protect', '');
             document.getElementById('modal-page').classList.remove('hidden'); 
         }
         
@@ -2038,7 +2713,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             const pageSlugEl = document.getElementById('pg-slug');
             pageSlugEl.value = pageSlugEl.value.trim() ? makePageSlug(pageSlugEl.value) : makePageSlug(pageTitleEl.value);
             let rawContent = document.getElementById('pg-content').value;
-            const protectId = document.getElementById('pg-protect').value;
+            const protectId = getSelectedValues('pg-protect').join(',');
             
             try {
                 let tempDiv = document.createElement('div');
@@ -2055,7 +2730,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
 
             rawContent = rawContent.replace(/\[PROTECT:.*?\]/gi, ''); 
 
-            if(protectId !== "") {
+            if(false && protectId !== "") {
                 const rawScript = `
                     (function() {
                         var lk = document.getElementById('sf-loading-lock-${protectId}');
@@ -2136,7 +2811,20 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
                 `;
             }
 
-            const p = { action: 'save_page', id: document.getElementById('pg-id').value, slug: document.getElementById('pg-slug').value, title: document.getElementById('pg-title').value, content: rawContent, is_edit: document.getElementById('pg-is-edit').value === 'true' }; 
+            const p = {
+                action: 'save_page',
+                id: document.getElementById('pg-id').value,
+                slug: document.getElementById('pg-slug').value,
+                title: document.getElementById('pg-title').value,
+                content: rawContent,
+                seo_title: document.getElementById('pg-seo-title').value,
+                seo_description: document.getElementById('pg-seo-description').value,
+                seo_keywords: document.getElementById('pg-seo-keywords').value,
+                seo_image: document.getElementById('pg-seo-image').value,
+                category: 'Umum',
+                protect_products: protectId,
+                is_edit: document.getElementById('pg-is-edit').value === 'true'
+            }; 
             try {
                 const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
                 const res = await fetch(targetUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) }); 
@@ -2180,6 +2868,38 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             const num = list.querySelectorAll('.b-step').length + 1;
             list.insertAdjacentHTML('beforeend', `<div class="b-step" contenteditable="true" style="display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:start;"><span style="width:2.25rem;height:2.25rem;border-radius:999px;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${num}</span><div><h3 style="font-size:1.05rem;font-weight:900;color:#0f172a;margin:0 0 .35rem;">Langkah Baru</h3><p style="font-size:.95rem;color:#64748b;margin:0;line-height:1.65;">Jelaskan langkah ini dengan ringkas.</p></div></div>`);
         }
+        function extractYouTubeId(value = '') {
+            const raw = String(value || '').trim();
+            if(!raw) return '';
+            if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+            const patterns = [
+                /youtu\.be\/([a-zA-Z0-9_-]{11})/i,
+                /youtube\.com\/(?:watch\?.*?[?&]?v=|embed\/|shorts\/|live\/)([a-zA-Z0-9_-]{11})/i,
+                /[?&]v=([a-zA-Z0-9_-]{11})/i
+            ];
+            for(const pattern of patterns) {
+                const match = raw.match(pattern);
+                if(match && match[1]) return match[1];
+            }
+            return '';
+        }
+        function updateBuilderYouTubePreview(input) {
+            const block = input.closest('.builder-block');
+            if(!block) return;
+            const videoId = extractYouTubeId(input.value);
+            const frame = block.querySelector('.b-yt-preview-frame');
+            const empty = block.querySelector('.b-yt-preview-empty');
+            if(videoId) {
+                frame.src = `https://www.youtube.com/embed/${videoId}`;
+                frame.classList.remove('hidden');
+                empty.classList.add('hidden');
+            } else {
+                frame.removeAttribute('src');
+                frame.classList.add('hidden');
+                empty.classList.remove('hidden');
+            }
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
         function addBuilderComponent(type) {
             const canvas = document.getElementById('builder-canvas-content');
@@ -2208,7 +2928,7 @@ Jika masih berminat, silakan pesan ulang melalui halaman berikut:
             } else if(type === 'button') {
                 htmlBlock = `<div class="builder-block" data-type="button">${controls}<div class="builder-tool-panel"><span class="builder-label">CTA</span><input type="text" class="b-btn-text form-input flex-grow" value="TOMBOL AKSI" oninput="this.closest('.builder-block').querySelector('.sf-btn').innerText = this.value"><input type="text" class="b-btn-url form-input flex-grow" value="https://" placeholder="Link URL" oninput="this.closest('.builder-block').querySelector('.sf-btn').setAttribute('href', this.value || '#')"><select class="b-btn-align form-select" onchange="this.closest('.builder-block').querySelector('.b-content').style.textAlign = this.value"><option value="left">Kiri</option><option value="center" selected>Tengah</option><option value="right">Kanan</option></select></div><div class="b-content text-center" style="text-align: center;"><a href="https://" class="sf-btn pointer-events-none" style="display: inline-block; background-color: #f97316; color: #ffffff; font-size: 1.1rem; font-weight: 800; padding: 1rem 1.75rem; border-radius: 0.75rem; text-decoration: none;">TOMBOL AKSI</a></div></div>`;
             } else if(type === 'youtube') {
-                htmlBlock = `<div class="builder-block" data-type="youtube">${controls}<div class="builder-tool-panel"><i data-lucide="youtube" class="w-4 h-4 text-rose-500"></i><input type="text" class="b-yt-id form-input w-full" placeholder="Input ID Video YouTube (Contoh: Ce6o6QCGqiE)"></div><div class="aspect-video bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 text-sm font-bold border-4 border-slate-200"><i data-lucide="play-circle" class="w-10 h-10 mr-2 opacity-50"></i> PREVIEW VIDEO YOUTUBE</div></div>`;
+                htmlBlock = `<div class="builder-block" data-type="youtube">${controls}<div class="builder-tool-panel"><i data-lucide="youtube" class="w-4 h-4 text-rose-500"></i><input type="text" class="b-yt-id form-input w-full" placeholder="Paste URL / ID YouTube" oninput="updateBuilderYouTubePreview(this)"></div><div class="b-content"><div class="b-yt-preview" style="position:relative;aspect-ratio:16/9;width:100%;overflow:hidden;border-radius:1rem;background:#0f172a;border:1px solid #e2e8f0;box-shadow:0 18px 40px rgba(15,23,42,.14);"><iframe class="b-yt-preview-frame hidden" style="position:absolute;inset:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe><div class="b-yt-preview-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:#cbd5e1;text-align:center;padding:1.5rem;"><span style="width:4.25rem;height:4.25rem;border-radius:999px;background:#ef4444;color:white;display:flex;align-items:center;justify-content:center;"><i data-lucide="youtube" class="w-8 h-8"></i></span><strong style="font-size:1rem;color:#fff;">Preview Video YouTube</strong><small style="max-width:24rem;line-height:1.55;">Paste link YouTube, Shorts, atau ID video untuk menampilkan preview.</small></div></div></div></div>`;
             } else if(type === 'faq') {
                 htmlBlock = `<div class="builder-block" data-type="faq">${controls}<div class="flex justify-between items-center mb-3"><h4 class="font-bold text-slate-600 text-sm"><i data-lucide="help-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> FAQ Builder</h4><button type="button" onclick="const t=document.createElement('div'); t.className='b-faq-i border border-slate-200 rounded p-2 bg-slate-50 relative mb-2'; t.innerHTML='<button type=\\'button\\' onclick=\\'this.closest(\\\'.b-faq-i\\').remove()\\' class=\\'absolute top-2 right-2 text-slate-400 hover:text-rose-500\\'><svg class=\\'w-4 h-4\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M6 18L18 6M6 6l12 12\\'></path></svg></button><input type=\\'text\\' class=\\'b-q form-input w-full text-sm p-2 mb-2 font-bold pr-8\\' placeholder=\\'Pertanyaan\\'><textarea class=\\'b-a form-textarea custom-scroll w-full text-sm p-2 min-h-[60px]\\' placeholder=\\'Jawaban...\\'></textarea>'; this.parentElement.nextElementSibling.appendChild(t);" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded hover:bg-indigo-100">+ Tambah FAQ</button></div><div class="b-faq-list flex flex-col"><div class="b-faq-i border border-slate-200 rounded p-2 bg-slate-50 relative mb-2"><button type="button" onclick="this.closest('.b-faq-i').remove()" class="absolute top-2 right-2 text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-4 h-4"></i></button><input type="text" class="b-q form-input w-full text-sm p-2 mb-2 font-bold pr-8" placeholder="Pertanyaan"><textarea class="b-a form-textarea custom-scroll w-full text-sm p-2 min-h-[60px]" placeholder="Jawaban..."></textarea></div></div></div>`;
             } else if(type === 'divider') {
@@ -2258,7 +2978,7 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
                     finalHtml += `<div style="text-align: ${align}; margin-bottom: 2.5rem;"><a href="${url}" style="display: inline-block; background-color: #f97316; color: #ffffff; font-size: 1.1rem; font-weight: 800; padding: 1.25rem 3rem; border-radius: 0.75rem; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); border:none;">${text}</a></div>\n`;
                 } 
                 else if (type === 'youtube') {
-                    const ytid = block.querySelector('.b-yt-id').value;
+                    const ytid = extractYouTubeId(block.querySelector('.b-yt-id')?.value || '');
                     if(ytid) { finalHtml += `<div style="margin-bottom: 2.5rem;"><div style="border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); aspect-ratio: 16/9; position: relative; width: 100%; background: #000;"><iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" src="https://www.youtube.com/embed/${ytid}" frameborder="0" allowfullscreen></iframe></div></div>\n`; }
                 } 
                 else if (type === 'faq') {
@@ -2405,7 +3125,7 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
                     const align = block.querySelector('.b-content')?.style.textAlign || 'center';
                     finalHtml += buildSection(`<div style="text-align: ${align};"><a href="${url}" class="sf-btn">${text}</a></div>`, 'white', 'normal', 'compact');
                 } else if (type === 'youtube') {
-                    const ytid = String(block.querySelector('.b-yt-id')?.value || '').trim().replace(/[^a-zA-Z0-9_-]/g, '');
+                    const ytid = extractYouTubeId(block.querySelector('.b-yt-id')?.value || '');
                     if (ytid) finalHtml += buildSection(`<div class="sf-video"><iframe src="https://www.youtube.com/embed/${ytid}" frameborder="0" allowfullscreen></iframe></div>`, 'white', 'wide', 'compact');
                 } else if (type === 'faq') {
                     const items = block.querySelectorAll('.b-faq-i');
@@ -2465,6 +3185,54 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
             document.getElementById('modal-page').classList.remove('hidden');
         };
 
+        function collectAdminSettingsPayload() {
+            const payloadObj = {};
+            if(typeof syncPaymentChannelInputs === 'function') syncPaymentChannelInputs();
+            const inputs = document.querySelectorAll('#admin-settings-form [data-key]');
+            inputs.forEach(input => {
+                const key = input.getAttribute('data-key');
+                if (input.type === 'radio') {
+                    if (input.checked) payloadObj[key] = input.value;
+                } else if (input.type === 'checkbox') {
+                    payloadObj[key] = input.checked ? 'true' : 'false';
+                } else {
+                    payloadObj[key] = input.value;
+                }
+            });
+            return payloadObj;
+        }
+
+        async function testWhatsAppGateway() {
+            const btn = document.getElementById('btn-test-wa');
+            const oriText = btn ? btn.innerHTML : '';
+            const payloadObj = collectAdminSettingsPayload();
+            if (!String(payloadObj.wa_admin || '').trim()) return showToast('No WA Admin wajib diisi untuk tes.', 'warning');
+            if (!String(payloadObj.wa_token || '').trim()) return showToast('API Token WhatsApp wajib diisi untuk tes.', 'warning');
+            if (btn) {
+                btn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Mengetes...';
+                btn.disabled = true;
+                lucide.createIcons();
+            }
+            try {
+                const targetUrl = window.SCRIPT_URL || (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : null);
+                const res = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'test_wa_gateway', target: payloadObj.wa_admin, settings_override: payloadObj })
+                });
+                const r = await res.json();
+                showToast(r.message || (r.status === 'success' ? 'Tes WhatsApp berhasil.' : 'Tes WhatsApp gagal.'), r.status === 'success' ? 'success' : 'error');
+            } catch(err) {
+                showToast('Tes WhatsApp gagal menghubungi server.', 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = oriText;
+                    btn.disabled = false;
+                    lucide.createIcons();
+                }
+            }
+        }
+
         const formSettings = document.getElementById('admin-settings-form');
         if(formSettings) {
             formSettings.onsubmit = async (e) => {
@@ -2475,20 +3243,7 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
                 btn.disabled = true;
                 lucide.createIcons();
 
-                const payloadObj = {};
-                if(typeof syncPaymentChannelInputs === 'function') syncPaymentChannelInputs();
-                const inputs = document.querySelectorAll('#admin-settings-form [data-key]');
-                
-                inputs.forEach(input => {
-                    const key = input.getAttribute('data-key');
-                    if (input.type === 'radio') {
-                        if (input.checked) payloadObj[key] = input.value;
-                    } else if (input.type === 'checkbox') {
-                        payloadObj[key] = input.checked ? 'true' : 'false';
-                    } else {
-                        payloadObj[key] = input.value;
-                    }
-                });
+                const payloadObj = collectAdminSettingsPayload();
 
                 const pData = { action: 'update_settings', payload: payloadObj };
 
@@ -2701,15 +3456,59 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
         }
 
         function downloadProductImportTemplate() {
-            const csv = [
-                'ID_PRODUK,NAMA_PRODUK,LINK_DRIVE,HARGA,HARGA_CORET,DESKRIPSI,KATEGORI,URL_GAMBAR,KOMISI,KOMISI_L2,KOMISI_L3,STATUS',
-                'EBOOK-001,Judul Ebook Pertama,https://drive.google.com/file/d/FILE_ID/view,97000,197000,Deskripsi singkat ebook,Ebook,https://domain.com/cover.jpg,30,0,0,Active'
-            ].join('\n');
+            const rows = [
+                [
+                    'ID_PRODUK',
+                    'KOMISI',
+                    'KOMISI_L2',
+                    'KOMISI_L3',
+                    'HARGA_CORET',
+                    'HARGA',
+                    'NAMA_PRODUK',
+                    'KATEGORI',
+                    'URL_GAMBAR',
+                    'URL_LANDING_PAGE',
+                    'URL_AKSES',
+                    'PDF_DRIVE_ID',
+                    'DESKRIPSI',
+                    'BUMP_STATUS',
+                    'BUMP_PRICE',
+                    'BUMP_TITLE',
+                    'BUMP_URL',
+                    'BUMP_DESC',
+                    'STATUS'
+                ],
+                [
+                    'PRD-001',
+                    '30',
+                    '5',
+                    '2',
+                    '197000',
+                    '97000',
+                    'Nama Produk Digital',
+                    'Ebook',
+                    'https://domain.com/cover.jpg',
+                    '/promo-produk',
+                    '/akses-pdf.html?id=PRD-001',
+                    'FILE_ID_GOOGLE_DRIVE',
+                    'Deskripsi singkat produk digital.',
+                    'Inactive',
+                    '0',
+                    '',
+                    '',
+                    '',
+                    'Active'
+                ]
+            ];
+            const csv = rows.map(row => row.map(value => {
+                const text = String(value ?? '');
+                return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+            }).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'template-import-produk-ebook.csv';
+            a.download = 'template-import-produk-cloudmember.csv';
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -2749,15 +3548,40 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
                 GOOGLE_DRIVE_ID: 'PDF_DRIVE_ID',
                 DESC: 'DESKRIPSI',
                 DESCRIPTION: 'DESKRIPSI',
+                DESKRIPSI_PRODUK: 'DESKRIPSI',
                 URL_COVER: 'URL_GAMBAR',
                 GAMBAR: 'URL_GAMBAR',
                 COVER: 'URL_GAMBAR',
+                GAMBAR_PRODUK: 'URL_GAMBAR',
                 LANDING: 'URL_LANDING_PAGE',
                 LP_URL: 'URL_LANDING_PAGE',
+                LANDING_PAGE: 'URL_LANDING_PAGE',
+                URL_LP: 'URL_LANDING_PAGE',
                 CHECKOUT: 'URL_LANDING_PAGE',
+                AKSES: 'URL_AKSES',
+                LINK_AKSES: 'URL_AKSES',
+                LINK_MATERI: 'URL_AKSES',
+                URL_MATERI: 'URL_AKSES',
                 HARGA_JUAL: 'HARGA',
+                HARGA_DISKON: 'HARGA',
                 PRICE: 'HARGA',
-                CORET: 'HARGA_CORET'
+                CORET: 'HARGA_CORET',
+                KOMISI_AFFILIATE: 'KOMISI',
+                KOMISI_L1: 'KOMISI',
+                BUMP: 'BUMP_STATUS',
+                STATUS_BUMP: 'BUMP_STATUS',
+                BUMP_SELL: 'BUMP_STATUS',
+                HARGA_BUMP: 'BUMP_PRICE',
+                BUMP_HARGA: 'BUMP_PRICE',
+                JUDUL_BUMP: 'BUMP_TITLE',
+                BUMP_JUDUL: 'BUMP_TITLE',
+                PENAWARAN_BUMP: 'BUMP_TITLE',
+                AKSES_BUMP: 'BUMP_URL',
+                LINK_BUMP: 'BUMP_URL',
+                URL_BUMP: 'BUMP_URL',
+                DESKRIPSI_BUMP: 'BUMP_DESC',
+                BUMP_DESKRIPSI: 'BUMP_DESC',
+                STATUS_PRODUK: 'STATUS'
             };
             return aliases[key] || key;
         }
@@ -2802,7 +3626,7 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
             if (!lines.length) return [];
             const delimiter = detectCsvDelimiter(lines[0]);
             const rows = lines.map(line => splitCsvLine(line, delimiter));
-            const knownHeaders = new Set(['ID_PRODUK', 'NAMA_PRODUK', 'LINK_DRIVE', 'HARGA', 'HARGA_CORET', 'DESKRIPSI', 'KATEGORI', 'URL_GAMBAR', 'URL_AKSES', 'URL_LANDING_PAGE', 'PDF_DRIVE_ID', 'KOMISI', 'KOMISI_L2', 'KOMISI_L3', 'STATUS']);
+            const knownHeaders = new Set(['ID_PRODUK', 'KOMISI', 'KOMISI_L2', 'KOMISI_L3', 'HARGA_CORET', 'HARGA', 'NAMA_PRODUK', 'KATEGORI', 'URL_GAMBAR', 'URL_LANDING_PAGE', 'URL_AKSES', 'LINK_DRIVE', 'PDF_DRIVE_ID', 'DESKRIPSI', 'BUMP_STATUS', 'BUMP_PRICE', 'BUMP_TITLE', 'BUMP_URL', 'BUMP_DESC', 'STATUS']);
             const firstRowHeaders = rows[0].map(normalizeImportHeader);
             const hasHeader = firstRowHeaders.some(header => knownHeaders.has(header));
             const headers = hasHeader ? firstRowHeaders : ['NAMA_PRODUK', 'LINK_DRIVE', 'HARGA', 'DESKRIPSI', 'KATEGORI', 'URL_GAMBAR'];
@@ -2898,8 +3722,8 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
 
             return rows.map((row, index) => {
                 const rowText = getImportRowText(row);
-                const driveLink = pickImportValue(row, ['LINK_DRIVE', 'URL_DRIVE', 'URL_FILE', 'PDF_LINK', 'URL_AKSES']) || findDriveLikeValue(row);
-                const pdfDriveId = pickImportValue(row, ['PDF_DRIVE_ID', 'DRIVE_ID', 'FILE_ID']) || extractDriveFileId(driveLink) || extractDriveFileId(rowText);
+                const driveLink = pickImportValue(row, ['LINK_DRIVE', 'URL_DRIVE', 'URL_FILE', 'PDF_LINK', 'URL_AKSES', 'LINK_AKSES', 'LINK_MATERI']) || findDriveLikeValue(row);
+                const pdfDriveId = pickImportValue(row, ['PDF_DRIVE_ID', 'DRIVE_ID', 'FILE_ID', 'GOOGLE_DRIVE_ID']) || extractDriveFileId(driveLink) || extractDriveFileId(rowText);
                 const fallbackNo = String(index + 1).padStart(3, '0');
                 const title = pickImportValue(row, ['NAMA_PRODUK', 'NAMA', 'JUDUL', 'TITLE']) || `Ebook ${fallbackNo}`;
                 let id = pickImportValue(row, ['ID_PRODUK', 'ID', 'KODE', 'SKU']);
@@ -2915,34 +3739,36 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
                 }
                 usedIds.add(id);
 
-                const urlAkses = pickImportValue(row, ['URL_AKSES', 'LINK_AKSES']) || (pdfDriveId ? `/akses-pdf.html?id=${encodeURIComponent(id)}` : driveLink);
+                const urlAkses = pickImportValue(row, ['URL_AKSES', 'LINK_AKSES', 'LINK_MATERI', 'URL_MATERI']) || (pdfDriveId ? `/akses-pdf.html?id=${encodeURIComponent(id)}` : driveLink);
                 const category = pickImportValue(row, ['KATEGORI']) || defaultCategory;
                 const autoDesc = descTemplate
                     .replace(/\{judul\}/gi, title)
                     .replace(/\{kategori\}/gi, category)
                     .replace(/\{id\}/gi, id);
                 const driveThumb = pdfDriveId ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(pdfDriveId)}&sz=w1000` : '';
+                const rawBumpStatus = pickImportValue(row, ['BUMP_STATUS', 'STATUS_BUMP', 'BUMP']);
+                const bumpStatus = /^(active|aktif|on|yes|true|1)$/i.test(rawBumpStatus) ? 'Active' : 'Inactive';
 
                 return {
                     id,
                     title,
-                    desc: pickImportValue(row, ['DESKRIPSI', 'DESC']) || autoDesc,
+                    desc: pickImportValue(row, ['DESKRIPSI', 'DESC', 'DESKRIPSI_PRODUK']) || autoDesc,
                     kategori: category,
                     harga: parseImportNumber(pickImportValue(row, ['HARGA', 'HARGA_JUAL', 'PRICE']), defaultPrice),
                     harga_coret: parseImportNumber(pickImportValue(row, ['HARGA_CORET', 'CORET']), 0),
-                    komisi: parseImportNumber(pickImportValue(row, ['KOMISI']), defaultKomisi),
+                    komisi: parseImportNumber(pickImportValue(row, ['KOMISI', 'KOMISI_L1', 'KOMISI_AFFILIATE']), defaultKomisi),
                     komisi_l2: parseImportNumber(pickImportValue(row, ['KOMISI_L2']), 0),
                     komisi_l3: parseImportNumber(pickImportValue(row, ['KOMISI_L3']), 0),
                     url: urlAkses,
-                    lp_url: pickImportValue(row, ['URL_LANDING_PAGE', 'LP_URL']) || `/checkout?id=${encodeURIComponent(id)}`,
-                    gambar: pickImportValue(row, ['URL_GAMBAR', 'GAMBAR', 'COVER']) || defaultImage || driveThumb,
-                    status: pickImportValue(row, ['STATUS']) || 'Active',
+                    lp_url: pickImportValue(row, ['URL_LANDING_PAGE', 'LP_URL', 'LANDING_PAGE', 'URL_LP']) || `/checkout?id=${encodeURIComponent(id)}`,
+                    gambar: pickImportValue(row, ['URL_GAMBAR', 'GAMBAR', 'COVER', 'GAMBAR_PRODUK']) || defaultImage || driveThumb,
+                    status: pickImportValue(row, ['STATUS', 'STATUS_PRODUK']) || 'Active',
                     pdf_drive_id: pdfDriveId,
-                    bump_status: 'Inactive',
-                    bump_title: '',
-                    bump_price: 0,
-                    bump_desc: '',
-                    bump_url: ''
+                    bump_status: bumpStatus,
+                    bump_title: pickImportValue(row, ['BUMP_TITLE', 'JUDUL_BUMP', 'PENAWARAN_BUMP']),
+                    bump_price: parseImportNumber(pickImportValue(row, ['BUMP_PRICE', 'HARGA_BUMP', 'BUMP_HARGA']), 0),
+                    bump_desc: pickImportValue(row, ['BUMP_DESC', 'DESKRIPSI_BUMP', 'BUMP_DESKRIPSI']),
+                    bump_url: pickImportValue(row, ['BUMP_URL', 'AKSES_BUMP', 'LINK_BUMP', 'URL_BUMP'])
                 };
             }).filter(product => product.id && product.title);
         }
@@ -2952,7 +3778,7 @@ h1.judul-halaman, .judul-halaman, .page-title, .cms-title, .post-title, header.p
             if (!target) return;
             const products = buildProductImportPayload();
             const withDrive = products.filter(product => product.pdf_drive_id).length;
-            target.innerText = `${products.length} produk siap import • ${withDrive} file Drive terdeteksi`;
+            target.innerText = `${products.length} produk siap import - ${withDrive} file Drive terdeteksi`;
         }
 
         async function submitProductImport() {
